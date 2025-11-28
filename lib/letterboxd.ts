@@ -19,7 +19,7 @@ export function parseLetterboxdCsv(csv: string): LetterboxdImportItem[] {
     trim: true,
   }) as LetterboxdRow[];
 
-  return rows
+  const parsed = rows
     .map((row) => {
       const title = row["Name"] || row["Title"] || row["Film Title"] || "";
       if (!title) return null;
@@ -47,5 +47,7 @@ export function parseLetterboxdCsv(csv: string): LetterboxdImportItem[] {
         watchedDate,
       };
     })
-    .filter((item): item is LetterboxdImportItem => !!item?.title);
+    .filter((item): item is LetterboxdImportItem => !!item);
+
+  return parsed;
 }
