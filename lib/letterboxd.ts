@@ -18,9 +18,9 @@ export function parseLetterboxdCsv(csv: string): LetterboxdImportItem[] {
     relax_quotes: true,
     relax_column_count: true,
     trim: true,
-    delimiter: [",", ";", "\t"],
+    delimiter: [",", ";", "\t"] as string[],
     bom: true,
-  } as const;
+  };
 
   const headerRows = parse(csv, baseOptions) as LetterboxdRow[];
   const parsedFromHeader = mapRows(headerRows);
