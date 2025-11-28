@@ -13,6 +13,9 @@ import Image from "next/image";
 import { ImportLetterboxd } from "@/components/import-letterboxd";
 import { ItemsView } from "@/components/items-view";
 import { SharePanel } from "@/components/share-panel";
+import { SmartStats } from "@/components/smart-stats";
+import { buildRecommendationsFromItems } from "@/lib/recommendations";
+import { Recommendations } from "@/components/recommendations";
 
 type SearchParam =
   | Promise<Record<string, string | string[] | undefined>>
@@ -70,6 +73,11 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
 
   const conditions = [];
 
+  const allUserItems = await db.query.items.findMany({
+    where: eq(items.userId, userId),
+    orderBy: [desc(items.createdAt)],
+  });
+
   const typeFilter = typeParam && ITEM_TYPES.includes(typeParam as any) ? (typeParam as (typeof ITEM_TYPES)[number]) : undefined;
   const statusFilter =
     statusParam && STATUSES.includes(statusParam as any)
@@ -118,13 +126,9 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     orderBy: [desc(items.createdAt)],
   })) as any[];
 
-  const allTagsSource = await db.query.items.findMany({
-    where: eq(items.userId, userId),
-    columns: { tags: true },
-  });
   const uniqueTags = Array.from(
     new Set(
-      allTagsSource
+      allUserItems
         .flatMap((row) => (row.tags ?? "").split(","))
         .map((t) => t.trim())
         .filter(Boolean),
@@ -148,10 +152,32 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     count: statusMap.get(status) ?? 0,
   }));
 
+  const tagCounts = allUserItems
+    .flatMap((row) => (row.tags ?? "").split(","))
+    .map((t) => t.trim())
+    .filter(Boolean)
+    .reduce<Record<string, number>>((acc, tag) => {
+      acc[tag] = (acc[tag] || 0) + 1;
+      return acc;
+    }, {});
+
+  const topTags = Object.entries(tagCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  const avgRatingRow =
+    (await db
+      .select({ avg: sql<number>`avg("items"."rating")` })
+      .from(items)
+      .where(whereClause)) ?? [{ avg: null }];
+  const avgRating = Number(avgRatingRow[0]?.avg ?? 0);
+
   const userRow = await db.query.users.findFirst({
     where: eq(users.id, userId),
     columns: { publicHandle: true, publicEnabled: true },
   });
+
+  const recommendations = await buildRecommendationsFromItems(allUserItems);
 
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-12">
@@ -223,6 +249,9 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           </div>
         </div>
       </div>
+
+      <SmartStats items={allUserItems} />
+      <Recommendations recommendations={recommendations} />
 
       <FiltersBar type={typeParam} status={statusParam} q={qParam} />
       {userId ? (

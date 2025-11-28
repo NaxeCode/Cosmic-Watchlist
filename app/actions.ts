@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { items, users } from "@/db/schema";
 import {
@@ -15,6 +15,7 @@ import { parseLetterboxdCsv } from "@/lib/letterboxd";
 import { STATUSES } from "@/lib/constants";
 import { nanoid } from "nanoid";
 import { tagsToArray } from "@/lib/utils";
+import { fetchMetadata, metadataToUpdate } from "@/lib/metadata";
 
 type ActionState = {
   success?: string;
@@ -28,6 +29,37 @@ function buildFieldErrors(error: unknown) {
     return flat?.fieldErrors;
   }
   return undefined;
+}
+
+function resolveCompletedAt(
+  previousStatus: string | undefined,
+  nextStatus: string,
+  previousCompletedAt?: Date | null,
+) {
+  if (nextStatus === "completed") return previousCompletedAt ?? new Date();
+  if (previousStatus === "completed" && nextStatus !== "completed") return null;
+  return previousCompletedAt ?? null;
+}
+
+async function enrichItemRecord(id: number, title: string, type: string) {
+  const meta = await fetchMetadata(title, type);
+  if (!meta) return;
+  const update = metadataToUpdate(meta);
+  if (!Object.keys(update).length) return;
+  try {
+    await db.update(items).set(update as any).where(eq(items.id, id));
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[metadata] failed to persist metadata", error);
+    }
+  }
+}
+
+function parseDate(value?: string | null) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed;
 }
 
 export async function createItemAction(
@@ -59,15 +91,22 @@ export async function createItemAction(
   const payload = parsed.data;
 
   try {
-    await db.insert(items).values({
-      title: payload.title,
-      type: payload.type,
-      status: payload.status,
-      rating: payload.rating ?? null,
-      tags: payload.tags ?? null,
-      notes: payload.notes ?? null,
-      userId,
-    });
+    const [created] = await db
+      .insert(items)
+      .values({
+        title: payload.title,
+        type: payload.type,
+        status: payload.status,
+        rating: payload.rating ?? null,
+        tags: payload.tags ?? null,
+        notes: payload.notes ?? null,
+        completedAt: resolveCompletedAt(undefined, payload.status),
+        userId,
+      })
+      .returning({ id: items.id });
+    if (created?.id) {
+      await enrichItemRecord(created.id, payload.title, payload.type);
+    }
     await trackEvent("item_created", { type: payload.type, status: payload.status });
     revalidatePath("/");
     return { success: "Added to your watchlist." };
@@ -106,6 +145,15 @@ export async function updateItemAction(
   const payload = parsed.data;
 
   try {
+    const existing = await db.query.items.findFirst({
+      where: and(eq(items.id, payload.id), eq(items.userId, userId)),
+    });
+    if (!existing) {
+      return { error: "Item not found." };
+    }
+
+    const completedAt = resolveCompletedAt(existing.status, payload.status, existing.completedAt);
+
     await db
       .update(items)
       .set({
@@ -115,9 +163,22 @@ export async function updateItemAction(
         rating: payload.rating ?? null,
         tags: payload.tags ?? null,
         notes: payload.notes ?? null,
+        completedAt,
         updatedAt: new Date(),
       })
       .where(and(eq(items.id, payload.id), eq(items.userId, userId)));
+
+    const needsMetadata =
+      existing.title.trim().toLowerCase() !== payload.title.trim().toLowerCase() ||
+      existing.type !== payload.type ||
+      !existing.posterUrl ||
+      !existing.synopsis ||
+      existing.runtimeMinutes === null ||
+      existing.runtimeMinutes === undefined;
+
+    if (needsMetadata) {
+      await enrichItemRecord(payload.id, payload.title, payload.type);
+    }
 
     await trackEvent("item_updated", { id: payload.id });
     revalidatePath("/");
@@ -186,18 +247,37 @@ export async function importLetterboxdAction(
   }
 
   // Limit bulk insert to avoid huge uploads.
-  const rows = parsed.slice(0, 300).map((row) => ({
-    title: row.title,
-    type: "movie" as const,
-    status: row.watchedDate ? ("completed" as const) : ("planned" as const),
-    rating: row.rating ?? null,
-    tags: row.tags ?? null,
-    notes: row.notes ?? null,
-    userId,
-  }));
+  const rows = parsed.slice(0, 300).map((row) => {
+    const completedAt = parseDate(row.watchedDate);
+    const yearNumeric = row.year ? Number(row.year) : undefined;
+    const releaseYear =
+      yearNumeric !== undefined && Number.isFinite(yearNumeric) ? Math.trunc(yearNumeric) : null;
+    const status = completedAt ? ("completed" as const) : ("planned" as const);
+
+    return {
+      title: row.title,
+      type: "movie" as const,
+      status,
+      rating: row.rating ?? null,
+      tags: row.tags ?? null,
+      notes: row.notes ?? null,
+      releaseYear,
+      completedAt,
+      userId,
+    };
+  });
 
   try {
-    await db.insert(items).values(rows);
+    const inserted = await db
+      .insert(items)
+      .values(rows)
+      .returning({ id: items.id, title: items.title, type: items.type });
+
+    const toEnrich = inserted.slice(0, 20);
+    for (const row of toEnrich) {
+      await enrichItemRecord(row.id, row.title, row.type);
+    }
+
     revalidatePath("/");
     return { success: `Imported ${rows.length} movies from Letterboxd.` };
   } catch (err) {
@@ -229,9 +309,14 @@ export async function bulkUpdateStatusAction(
   }
 
   try {
+    const completedAtUpdate =
+      status === "completed"
+        ? (sql`coalesce("items"."completed_at", now())` as any)
+        : null;
+
     await db
       .update(items)
-      .set({ status })
+      .set({ status, completedAt: completedAtUpdate, updatedAt: new Date() })
       .where(and(eq(items.userId, userId), inArray(items.id, ids)));
 
     revalidatePath("/");

@@ -87,6 +87,17 @@ export const items = pgTable("items", {
   rating: integer("rating"), // 0..10, nullable
   tags: text("tags"),
   notes: text("notes"),
+  releaseYear: integer("release_year"),
+  runtimeMinutes: integer("runtime_minutes"),
+  posterUrl: text("poster_url"),
+  synopsis: text("synopsis"),
+  cast: text("cast"),
+  genres: text("genres"),
+  studios: text("studios"),
+  imdbId: varchar("imdb_id", { length: 32 }),
+  tmdbId: integer("tmdb_id"),
+  metadataSource: varchar("metadata_source", { length: 24 }),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
   userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
