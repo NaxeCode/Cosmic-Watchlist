@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { items } from "@/db/schema";
 import {
@@ -12,6 +12,7 @@ import {
 import { trackEvent } from "@/lib/analytics";
 import { auth } from "@/auth";
 import { parseLetterboxdCsv } from "@/lib/letterboxd";
+import { STATUSES } from "@/lib/constants";
 
 type ActionState = {
   success?: string;
@@ -199,5 +200,41 @@ export async function importLetterboxdAction(
     return { success: `Imported ${rows.length} movies from Letterboxd.` };
   } catch (err) {
     return { error: (err as Error).message || "Failed to import Letterboxd data." };
+  }
+}
+
+export async function bulkUpdateStatusAction(
+  _prevState: ActionState | undefined,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { error: "Please sign in to bulk edit." };
+
+  const idsRaw = (formData.get("ids") as string | null) ?? "";
+  const status = (formData.get("status") as string | null)?.trim() as
+    | (typeof STATUSES)[number]
+    | undefined;
+
+  const ids = idsRaw
+    .split(",")
+    .map((v) => Number(v))
+    .filter((n) => Number.isInteger(n) && n > 0);
+
+  if (!ids.length) return { error: "Select at least one item." };
+  if (!status || !STATUSES.includes(status)) {
+    return { error: "Choose a valid status." };
+  }
+
+  try {
+    await db
+      .update(items)
+      .set({ status })
+      .where(and(eq(items.userId, userId), inArray(items.id, ids)));
+
+    revalidatePath("/");
+    return { success: `Updated ${ids.length} item(s) to "${status}".` };
+  } catch (err) {
+    return { error: (err as Error).message || "Bulk update failed." };
   }
 }
