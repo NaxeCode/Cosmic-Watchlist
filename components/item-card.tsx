@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import { CalendarClock, ChevronDown, ChevronUp, Clock, Star, Tag as TagIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,9 @@ export function ItemCard({
   selected: boolean;
   onToggle: (id: number) => void;
 }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [, startTransition] = useTransition();
   const tags = tagsToArray(item.tags);
   const genres = tagsToArray(item.genres);
   const studios = tagsToArray(item.studios);
@@ -40,6 +44,21 @@ export function ItemCard({
     month: "short",
     day: "numeric",
   }).format(new Date(item.createdAt));
+
+  const onTagClick = (tag: string) => {
+    const formatted = capitalize(tag);
+    const next = new URLSearchParams(searchParams.toString());
+    next.set("tag", formatted);
+    next.set("page", "1");
+    startTransition(() => {
+      router.push(`/?${next.toString()}`, { scroll: false });
+    });
+  };
+
+  function capitalize(text: string) {
+    if (!text) return "";
+    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  }
 
   return (
     <motion.div
@@ -120,18 +139,23 @@ export function ItemCard({
           )}
 
           <div className="flex flex-wrap items-center gap-2">
-            {genres.concat(tags).length > 0 ? (
-              Array.from(new Set([...genres, ...tags])).map((tag) => (
-                <Badge key={tag} variant="outline" className="capitalize text-[10px]">
-                  <TagIcon className="mr-1 h-3 w-3" />
-                  {tag}
-                </Badge>
-              ))
-            ) : (
-              <Badge variant="outline" className="text-[10px]">
-                tag me later
-              </Badge>
-            )}
+          {genres.concat(tags).length > 0 ? (
+            Array.from(new Set([...genres, ...tags])).map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => onTagClick(tag)}
+                className="inline-flex items-center rounded-full border border-border/70 bg-black/30 px-2 py-1 text-[10px] capitalize transition hover:border-primary/60 hover:text-foreground"
+              >
+                <TagIcon className="mr-1 h-3 w-3" />
+                {tag}
+              </button>
+            ))
+          ) : (
+            <Badge variant="outline" className="text-[10px]">
+              tag me later
+            </Badge>
+          )}
           </div>
 
           <CardContent className="space-y-2 p-0">
