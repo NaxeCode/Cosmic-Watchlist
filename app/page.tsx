@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike } from "drizzle-orm";
+import { and, desc, eq, ilike, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { items } from "@/db/schema";
@@ -12,6 +12,7 @@ import { ITEM_TYPES, STATUSES } from "@/lib/constants";
 import { AuthButtons } from "@/components/auth-buttons";
 import Image from "next/image";
 import { ImportLetterboxd } from "@/components/import-letterboxd";
+import { PaginationControls } from "@/components/pagination-controls";
 
 type SearchParam =
   | Promise<Record<string, string | string[] | undefined>>
@@ -29,6 +30,9 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   const typeParam = Array.isArray(params.type) ? params.type[0] : params.type;
   const statusParam = Array.isArray(params.status) ? params.status[0] : params.status;
   const qParam = Array.isArray(params.q) ? params.q[0] : params.q;
+  const pageParam = Array.isArray(params.page) ? params.page[0] : params.page;
+  const page = Math.max(1, Number(pageParam) || 1);
+  const pageSize = 10;
 
   if (!userId) {
     return (
@@ -77,10 +81,32 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     conditions.push(ilike(items.title, `%${qParam}%`));
   }
 
+  const whereClause = conditions.length
+    ? and(eq(items.userId, userId), ...conditions)
+    : eq(items.userId, userId);
+
+  const [{ count }] =
+    (await db
+      .select({ count: sql<number>`count(*)` })
+      .from(items)
+      .where(whereClause)) ?? [{ count: 0 }];
+
+  const total = Number(count) || 0;
+
   const results = await db.query.items.findMany({
-    where: conditions.length ? and(eq(items.userId, userId), ...conditions) : eq(items.userId, userId),
+    where: whereClause,
     orderBy: [desc(items.createdAt)],
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
   });
+
+  const allItemsForCommand = await db.query.items.findMany({
+    where: whereClause,
+    orderBy: [desc(items.createdAt)],
+    columns: { id: true, title: true, status: true, type: true },
+  });
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const statusStats = STATUSES.map((status) => ({
     status,
@@ -178,7 +204,15 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
               Showing {results.length} item{results.length === 1 ? "" : "s"} sorted by latest.
             </p>
           </div>
-          <CommandPalette withTrigger />
+          <CommandPalette
+            withTrigger
+            items={allItemsForCommand.map((i) => ({
+              id: i.id,
+              title: i.title,
+              status: i.status,
+              type: i.type,
+            }))}
+          />
         </div>
         {userId ? (
           results.length === 0 ? (
@@ -186,10 +220,16 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
               Nothing here yet. Add your first item to begin tracking.
             </div>
           ) : (
-            <div className="grid gap-4">
-              {results.map((item, idx) => (
-                <ItemCard key={item.id} item={item} index={idx} />
-              ))}
+            <div className="space-y-6">
+              <PaginationControls page={page} totalPages={totalPages} params={params} />
+              <div className="grid gap-4">
+                {results.map((item, idx) => (
+                  <ItemCard key={item.id} item={item} index={idx} />
+                ))}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Page {page} of {totalPages} · {total} item{total === 1 ? "" : "s"}
+              </div>
             </div>
           )
         ) : (

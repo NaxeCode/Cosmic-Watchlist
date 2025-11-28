@@ -27,8 +27,8 @@ interface CommandDialogProps extends DialogProps {}
 
 const CommandDialog = ({ children, ...props }: CommandDialogProps) => (
   <Dialog {...props}>
-    <DialogContent className="overflow-hidden p-0">
-      <Command className="[&_[cmdk-input-wrapper]]:px-3">
+    <DialogContent className="overflow-hidden border border-border/60 bg-popover/95 p-0 shadow-2xl sm:max-w-3xl">
+      <Command className="min-h-[520px] bg-transparent [&_[cmdk-input-wrapper]]:px-4">
         {children}
       </Command>
     </DialogContent>
@@ -59,7 +59,7 @@ const CommandList = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.List
     ref={ref}
-    className={cn("max-h-[400px] overflow-y-auto", className)}
+    className={cn("max-h-[520px] overflow-y-auto", className)}
     {...props}
   />
 ));
