@@ -5,6 +5,7 @@ import { Upload } from "lucide-react";
 import { toast } from "sonner";
 import { importLetterboxdAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type ActionState = {
   success?: string;
@@ -51,9 +52,12 @@ export function ImportLetterboxd() {
           required
           className="block w-full cursor-pointer rounded-lg border border-border/60 bg-transparent px-3 py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground"
         />
-        <p className="text-sm text-[#c8b5ff] drop-shadow-[0_0_10px_rgba(200,181,255,0.75)]">
-          Letterboxd export: Settings → Import & Export → Export your data → upload CSV.
-        </p>
+        <Alert variant="info">
+          <AlertTitle>Letterboxd export</AlertTitle>
+          <AlertDescription className="text-sm text-[#c8b5ff] drop-shadow-[0_0_10px_rgba(200,181,255,0.75)]">
+            Settings → Import & Export → Export your data → upload CSV. Semicolons and commas are supported.
+          </AlertDescription>
+        </Alert>
       </div>
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
     </form>

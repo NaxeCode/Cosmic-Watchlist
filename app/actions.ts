@@ -167,12 +167,20 @@ export async function importLetterboxdAction(
 
   const file = formData.get("file");
   if (!file || !(file instanceof File)) {
-    return { error: "Please upload a CSV export from Letterboxd." };
+    return {
+      error:
+        "Please upload a CSV export from Letterboxd (no file detected). Accepted delimiters: comma, semicolon, tab.",
+    };
   }
 
   const text = await file.text();
   const parsed = parseLetterboxdCsv(text);
-  if (!parsed.length) return { error: "No rows found in CSV." };
+  if (!parsed.length) {
+    return {
+      error:
+        "No rows found in CSV. Make sure headers include Name/Title (and optional Year/Rating/Tags). If you used semicolons, ensure UTF-8 encoding and try re-exporting. We support CSV delimiters: comma, semicolon, tab.",
+    };
+  }
 
   // Limit bulk insert to avoid huge uploads.
   const rows = parsed.slice(0, 300).map((row) => ({
