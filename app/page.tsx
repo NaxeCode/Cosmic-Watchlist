@@ -1,65 +1,201 @@
+import { and, desc, eq, ilike } from "drizzle-orm";
+import { auth } from "@/auth";
+import { db } from "@/db";
+import { items } from "@/db/schema";
+import { ItemForm } from "@/components/item-form";
+import { FiltersBar } from "@/components/filters-bar";
+import { ItemCard } from "@/components/item-card";
+import { CommandPalette } from "@/components/command-palette";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { ITEM_TYPES, STATUSES } from "@/lib/constants";
+import { AuthButtons } from "@/components/auth-buttons";
 import Image from "next/image";
 
-export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+type SearchParam =
+  | Promise<Record<string, string | string[] | undefined>>
+  | Record<string, string | string[] | undefined>;
+
+async function getParams(searchParams: SearchParam) {
+  return (await Promise.resolve(searchParams)) ?? {};
+}
+
+export default async function Home({ searchParams }: { searchParams: SearchParam }) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  const userImage = session?.user?.image ?? null;
+  const params = await getParams(searchParams);
+  const typeParam = Array.isArray(params.type) ? params.type[0] : params.type;
+  const statusParam = Array.isArray(params.status) ? params.status[0] : params.status;
+  const qParam = Array.isArray(params.q) ? params.q[0] : params.q;
+
+  if (!userId) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center gap-6 px-6 py-16">
+        <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-[#0f1020] via-[#0b0c18] to-[#070710] p-10 shadow-card text-center">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(124,58,237,0.28),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(14,165,233,0.22),transparent_30%),radial-gradient(circle_at_50%_80%,rgba(236,72,153,0.16),transparent_32%)] blur-[1px]" />
+          <div className="relative space-y-4">
+            <Badge variant="glow" className="text-xs uppercase tracking-[0.2em]">
+              Cosmic watchlist
+            </Badge>
+            <h1 className="text-4xl font-bold leading-tight md:text-5xl">
+              Sign in with Google to unlock your watchlist
+            </h1>
+            <p className="mx-auto max-w-2xl text-base text-muted-foreground">
+              Keep your anime, movies, TV, YouTube, and games in one place. Edits, filters, and ratings sync to your account instantly.
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
+              <Badge variant="outline">Private to your account</Badge>
+              <Badge variant="outline">Google sign-in</Badge>
+              <Badge variant="outline">Server actions</Badge>
+            </div>
+            <div className="flex justify-center pt-2">
+              <AuthButtons isSignedIn={false} />
+            </div>
+          </div>
         </div>
       </main>
-    </div>
+    );
+  }
+
+  const conditions = [];
+
+  const typeFilter = typeParam && ITEM_TYPES.includes(typeParam as any) ? (typeParam as (typeof ITEM_TYPES)[number]) : undefined;
+  const statusFilter =
+    statusParam && STATUSES.includes(statusParam as any)
+      ? (statusParam as (typeof STATUSES)[number])
+      : undefined;
+
+  if (typeFilter) {
+    conditions.push(eq(items.type, typeFilter));
+  }
+  if (statusFilter) {
+    conditions.push(eq(items.status, statusFilter));
+  }
+  if (qParam) {
+    conditions.push(ilike(items.title, `%${qParam}%`));
+  }
+
+  const results = await db.query.items.findMany({
+    where: conditions.length ? and(eq(items.userId, userId), ...conditions) : eq(items.userId, userId),
+    orderBy: [desc(items.createdAt)],
+  });
+
+  const statusStats = STATUSES.map((status) => ({
+    status,
+    count: results.filter((item) => item.status === status).length,
+  }));
+
+  return (
+    <main className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-12">
+      <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-[#0f1020] via-[#0b0c18] to-[#070710] p-8 shadow-card">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(124,58,237,0.28),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(14,165,233,0.22),transparent_30%),radial-gradient(circle_at_50%_80%,rgba(236,72,153,0.16),transparent_32%)] blur-[1px]" />
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-4">
+            <Badge variant="glow" className="text-sm uppercase tracking-[0.22em] px-4 py-2">
+              Stargazers💫 Cosmic Watchlist
+            </Badge>
+            <p className="text-base uppercase tracking-[0.2em] text-muted-foreground">
+              Personal Watch HQ
+            </p>
+            <h1 className="text-4xl font-bold leading-tight md:text-5xl">
+              <span className="bg-gradient-to-r from-[#c4b5fd] via-[#a78bfa] to-[#f472b6] bg-clip-text text-transparent animate-[gradient-shift_10s_ease_infinite]">
+                Track everything you watch
+              </span>
+              <br />
+              <span className="text-foreground">with cosmic clarity.</span>
+            </h1>
+            <p className="max-w-2xl text-base text-muted-foreground">
+              Dark, glassy, server-first watchlist with inline editing, filters, and type-safe mutations. Built for late-night sessions and focused vibes.
+            </p>
+            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+              <Badge variant="outline">Server Actions</Badge>
+              <Badge variant="outline">Drizzle + Postgres</Badge>
+              <Badge variant="outline">Zod validation</Badge>
+              <Badge variant="outline">Framer Motion</Badge>
+            </div>
+          </div>
+          <div className="flex flex-col items-start gap-3 rounded-2xl border border-border/60 bg-black/30 p-5 shadow-inner backdrop-blur-xl">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground/80">
+              <span className="h-2 w-2 rounded-full bg-primary shadow-glow" />
+              Quick stats
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Count</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {statusStats.map((row) => (
+                  <TableRow key={row.status}>
+                    <TableCell className="capitalize">{row.status}</TableCell>
+                    <TableCell>{row.count}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <p className="text-xs text-muted-foreground">
+              Press ⌘/Ctrl + K for the command palette.
+            </p>
+            <div className="flex items-center gap-3 pt-1">
+              {userImage && (
+                <div className="h-10 w-10 overflow-hidden rounded-full border border-border/80 shadow-inner">
+                  <Image
+                    src={userImage}
+                    alt="Profile"
+                    width={40}
+                    height={40}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              )}
+              <AuthButtons isSignedIn={!!userId} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <FiltersBar type={typeParam} status={statusParam} q={qParam} />
+      {userId ? (
+        <ItemForm />
+      ) : (
+        <div className="rounded-2xl border border-border/70 bg-secondary/50 p-6 text-sm text-muted-foreground">
+          Sign in with Google to start adding to your watchlist.
+          <div className="mt-3">
+            <AuthButtons isSignedIn={false} />
+          </div>
+        </div>
+      )}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold">Your items</h2>
+            <p className="text-sm text-muted-foreground">
+              Showing {results.length} item{results.length === 1 ? "" : "s"} sorted by latest.
+            </p>
+          </div>
+          <CommandPalette withTrigger />
+        </div>
+        {userId ? (
+          results.length === 0 ? (
+            <div className="rounded-2xl border border-border/70 bg-secondary/40 p-6 text-center text-muted-foreground">
+              Nothing here yet. Add your first item to begin tracking.
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {results.map((item, idx) => (
+                <ItemCard key={item.id} item={item} index={idx} />
+              ))}
+            </div>
+          )
+        ) : (
+          <div className="rounded-2xl border border-border/70 bg-secondary/40 p-6 text-center text-muted-foreground">
+            Sign in to see your personalized watchlist.
+          </div>
+        )}
+      </section>
+    </main>
   );
 }
