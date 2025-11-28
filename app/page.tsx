@@ -1,7 +1,7 @@
 import { and, desc, eq, ilike, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { items } from "@/db/schema";
+import { items, users } from "@/db/schema";
 import { ItemForm } from "@/components/item-form";
 import { FiltersBar } from "@/components/filters-bar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,6 +11,7 @@ import { AuthButtons } from "@/components/auth-buttons";
 import Image from "next/image";
 import { ImportLetterboxd } from "@/components/import-letterboxd";
 import { ItemsView } from "@/components/items-view";
+import { SharePanel } from "@/components/share-panel";
 
 type SearchParam =
   | Promise<Record<string, string | string[] | undefined>>
@@ -112,6 +113,11 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     count: results.filter((item) => item.status === status).length,
   }));
 
+  const userRow = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: { publicHandle: true, publicEnabled: true },
+  });
+
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-12">
       <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-[#0f1020] via-[#0b0c18] to-[#070710] p-8 shadow-card">
@@ -194,7 +200,15 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           </div>
         </div>
       )}
-      {userId && <ImportLetterboxd />}
+      {userId && (
+        <>
+          <ImportLetterboxd />
+          <SharePanel
+            initialHandle={userRow?.publicHandle ?? null}
+            initialEnabled={userRow?.publicEnabled ?? false}
+          />
+        </>
+      )}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>

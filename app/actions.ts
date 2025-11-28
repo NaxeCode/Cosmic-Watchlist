@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { items } from "@/db/schema";
+import { items, users } from "@/db/schema";
 import {
   createItemSchema,
   deleteItemSchema,
@@ -13,6 +13,7 @@ import { trackEvent } from "@/lib/analytics";
 import { auth } from "@/auth";
 import { parseLetterboxdCsv } from "@/lib/letterboxd";
 import { STATUSES } from "@/lib/constants";
+import { nanoid } from "nanoid";
 
 type ActionState = {
   success?: string;
@@ -236,5 +237,78 @@ export async function bulkUpdateStatusAction(
     return { success: `Updated ${ids.length} item(s) to "${status}".` };
   } catch (err) {
     return { error: (err as Error).message || "Bulk update failed." };
+  }
+}
+
+async function generateUniqueHandle() {
+  let handle: string;
+  // Try a few times to avoid collisions (very low probability with nanoid)
+  for (let i = 0; i < 5; i++) {
+    handle = nanoid(10);
+    const existing = await db.query.users.findFirst({
+      where: eq(users.publicHandle, handle),
+      columns: { id: true },
+    });
+    if (!existing) break;
+  }
+  return handle!;
+}
+
+export async function enableSharingAction(): Promise<ActionState & { handle?: string }> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { error: "Please sign in to manage sharing." };
+
+  try {
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: { publicHandle: true },
+    });
+
+    const handle = user?.publicHandle || (await generateUniqueHandle());
+    await db
+      .update(users)
+      .set({ publicEnabled: true, publicHandle: handle })
+      .where(eq(users.id, userId));
+
+    revalidatePath("/");
+    return { success: "Sharing enabled.", handle };
+  } catch (err) {
+    return { error: (err as Error).message || "Failed to enable sharing." };
+  }
+}
+
+export async function disableSharingAction(): Promise<ActionState> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { error: "Please sign in to manage sharing." };
+
+  try {
+    await db
+      .update(users)
+      .set({ publicEnabled: false })
+      .where(eq(users.id, userId));
+    revalidatePath("/");
+    return { success: "Sharing disabled." };
+  } catch (err) {
+    return { error: (err as Error).message || "Failed to disable sharing." };
+  }
+}
+
+export async function regenerateShareHandleAction(): Promise<ActionState & { handle?: string }> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { error: "Please sign in to manage sharing." };
+
+  try {
+    const handle = await generateUniqueHandle();
+    await db
+      .update(users)
+      .set({ publicEnabled: true, publicHandle: handle })
+      .where(eq(users.id, userId));
+    revalidatePath("/");
+    return { success: "Share link regenerated.", handle };
+  } catch (err) {
+    return { error: (err as Error).message || "Failed to regenerate share link." };
   }
 }
