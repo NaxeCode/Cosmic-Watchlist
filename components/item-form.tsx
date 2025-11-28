@@ -52,6 +52,9 @@ export function ItemForm() {
           <p className="text-sm text-muted-foreground">
             Track anything: anime, movies, TV, YouTube, games.
           </p>
+          <p className="text-xs text-muted-foreground">
+            Posters, year, runtime, synopsis, and cast auto-fill when TMDB/OMDb keys are set.
+          </p>
         </div>
         <Button type="submit" disabled={isPending} className="gap-2">
           <PlusCircle className="h-4 w-4" />

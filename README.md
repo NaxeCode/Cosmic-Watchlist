@@ -37,6 +37,7 @@ If you want Google auth:
 - Create OAuth credentials (Web) in Google Cloud console.
 - Add authorized redirect: `http://localhost:3000/api/auth/callback/google`
 - Put `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `NEXTAUTH_SECRET` in `.env.local`.
+- (Optional) Add `TMDB_API_KEY` (v3) and/or `OMDB_API_KEY` to auto-enrich items and power recommendations.
 
 4) Seed sample data
 ```bash
@@ -62,6 +63,9 @@ npm run dev
 - List items in reverse chronological order with glassy cards, badges, subtle motion, responsive layout.
 - Edit items in a dialog; delete with immediate feedback.
 - Filters for type/status + title search (URL search params).
+- Auto-enrich items via TMDB/OMDb (poster, year, runtime, synopsis, cast, genres, studios).
+- Smart stats: runtime totals, completion rate, activity spark bars, watched-day heatmap, genre/studio tallies.
+- Recommendations powered by your ratings/tags and TMDB similar titles.
 - Toast feedback on create/update/delete; server actions revalidate the list.
 - Dark premium theme with indigo/violet accents, rounded corners, focus states, hover lift.
 - Placeholder command palette (⌘/Ctrl + K or button) ready for future shortcuts.
