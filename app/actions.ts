@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { items, users } from "@/db/schema";
 import {
@@ -14,6 +14,7 @@ import { auth } from "@/auth";
 import { parseLetterboxdCsv } from "@/lib/letterboxd";
 import { STATUSES } from "@/lib/constants";
 import { nanoid } from "nanoid";
+import { tagsToArray } from "@/lib/utils";
 
 type ActionState = {
   success?: string;
@@ -310,5 +311,107 @@ export async function regenerateShareHandleAction(): Promise<ActionState & { han
     return { success: "Share link regenerated.", handle };
   } catch (err) {
     return { error: (err as Error).message || "Failed to regenerate share link." };
+  }
+}
+
+type AiCategorizeResult = {
+  success?: string;
+  error?: string;
+};
+
+export async function aiCategorizeAction(limit = 40): Promise<AiCategorizeResult> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { error: "Please sign in first." };
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return { error: "OPENAI_API_KEY is not set." };
+
+  const itemsToProcess = await db.query.items.findMany({
+    where: eq(items.userId, userId),
+    orderBy: [desc(items.createdAt)],
+    limit,
+  });
+
+  if (!itemsToProcess.length) return { error: "No items to categorize." };
+
+  const payload = itemsToProcess.map((item) => ({
+    id: item.id,
+    title: item.title,
+    type: item.type,
+    notes: item.notes ?? "",
+    tags: item.tags ?? "",
+  }));
+
+  const prompt = `
+You are a concise genre classifier. Given a list of entries, return a JSON array of objects with "id" and "genres" (1-3 short genre labels). Do not include explanations.
+Allowed genres are free-form but keep to broad film/TV/anime/game categories (e.g., "horror", "sci-fi", "romance", "fantasy", "thriller", "drama", "comedy", "action", "adventure", "mystery", "documentary", "family", "sports").
+
+Input:
+${JSON.stringify(payload, null, 2)}
+
+Output strictly as JSON (no code fences), e.g.:
+[{"id":123,"genres":["horror","thriller"]}]
+`;
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are a terse JSON-only genre tagging assistant." },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.2,
+        max_tokens: 400,
+      }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      return { error: `OpenAI error: ${response.status} ${errText}` };
+    }
+
+    const data = (await response.json()) as any;
+    const content: string | undefined = data?.choices?.[0]?.message?.content;
+    if (!content) return { error: "No response from model." };
+
+    let parsed: { id: number; genres: string[] }[];
+    try {
+      parsed = JSON.parse(content);
+    } catch {
+      return { error: "Failed to parse AI response." };
+    }
+
+    const updates = parsed
+      .filter((row) => Number.isInteger(row.id) && Array.isArray(row.genres))
+      .map((row) => ({
+        id: row.id,
+        genres: row.genres
+          .map((g) => String(g).toLowerCase().trim())
+          .filter(Boolean)
+          .slice(0, 4),
+      }));
+
+    if (!updates.length) return { error: "No valid genres returned." };
+
+    for (const { id, genres } of updates) {
+      if (!genres.length) continue;
+      const existing = itemsToProcess.find((i) => i.id === id);
+      if (!existing) continue;
+      const merged = Array.from(
+        new Set([...tagsToArray(existing.tags), ...genres]),
+      ).join(", ");
+      await db.update(items).set({ tags: merged }).where(eq(items.id, id));
+    }
+
+    revalidatePath("/");
+    return { success: `AI categorized ${updates.length} item(s).` };
+  } catch (err) {
+    return { error: (err as Error).message || "Failed to run AI categorize." };
   }
 }

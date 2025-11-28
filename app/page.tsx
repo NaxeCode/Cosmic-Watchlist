@@ -25,6 +25,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   const session = await auth();
   const userId = session?.user?.id;
   const userImage = session?.user?.image ?? null;
+  const aiAvailable = Boolean(process.env.OPENAI_API_KEY);
   const params = await getParams(searchParams);
   const typeParam = Array.isArray(params.type) ? params.type[0] : params.type;
   const statusParam = Array.isArray(params.status) ? params.status[0] : params.status;
@@ -232,6 +233,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
               total={total}
               params={params}
               pageSize={pageSize}
+              aiAvailable={aiAvailable}
             />
           )
         ) : (

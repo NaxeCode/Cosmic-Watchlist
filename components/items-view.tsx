@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ItemCard } from "@/components/item-card";
 import { PaginationControls } from "@/components/pagination-controls";
 import { CommandPalette } from "@/components/command-palette";
+import { AiCategorizeButton } from "@/components/ai-categorize-button";
 import type { items } from "@/db/schema";
 
 type Item = typeof items.$inferSelect;
@@ -16,6 +17,7 @@ export function ItemsView({
   total,
   params,
   pageSize,
+  aiAvailable,
 }: {
   items: Item[];
   allItems: Pick<Item, "id" | "title" | "status" | "type">[];
@@ -24,6 +26,7 @@ export function ItemsView({
   total: number;
   params: Record<string, string | string[] | undefined>;
   pageSize: number;
+  aiAvailable: boolean;
 }) {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
@@ -35,12 +38,15 @@ export function ItemsView({
     <div className="space-y-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <PaginationControls page={page} totalPages={totalPages} params={params} pageSize={pageSize} />
-        <CommandPalette
-          withTrigger
-          items={allItems}
-          selected={selectedIds}
-          onSelectedChange={setSelectedIds}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <AiCategorizeButton disabled={!aiAvailable} />
+          <CommandPalette
+            withTrigger
+            items={allItems}
+            selected={selectedIds}
+            onSelectedChange={setSelectedIds}
+          />
+        </div>
       </div>
       <div className="grid gap-3">
         {items.map((item, idx) => (
