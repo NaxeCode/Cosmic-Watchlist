@@ -11,6 +11,7 @@ import {
 } from "@/lib/validation";
 import { trackEvent } from "@/lib/analytics";
 import { auth } from "@/auth";
+import { parseLetterboxdCsv } from "@/lib/letterboxd";
 
 type ActionState = {
   success?: string;
@@ -153,5 +154,42 @@ export async function deleteItemAction(
     return { success: "Item removed." };
   } catch (err) {
     return { error: (err as Error).message || "Failed to delete item." };
+  }
+}
+
+export async function importLetterboxdAction(
+  _prevState: ActionState | undefined,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { error: "Please sign in to import." };
+
+  const file = formData.get("file");
+  if (!file || !(file instanceof File)) {
+    return { error: "Please upload a CSV export from Letterboxd." };
+  }
+
+  const text = await file.text();
+  const parsed = parseLetterboxdCsv(text);
+  if (!parsed.length) return { error: "No rows found in CSV." };
+
+  // Limit bulk insert to avoid huge uploads.
+  const rows = parsed.slice(0, 300).map((row) => ({
+    title: row.title,
+    type: "movie" as const,
+    status: row.watchedDate ? ("completed" as const) : ("planned" as const),
+    rating: row.rating ?? null,
+    tags: row.tags ?? null,
+    notes: row.notes ?? null,
+    userId,
+  }));
+
+  try {
+    await db.insert(items).values(rows);
+    revalidatePath("/");
+    return { success: `Imported ${rows.length} movies from Letterboxd.` };
+  } catch (err) {
+    return { error: (err as Error).message || "Failed to import Letterboxd data." };
   }
 }

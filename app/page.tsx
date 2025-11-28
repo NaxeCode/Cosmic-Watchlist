@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ITEM_TYPES, STATUSES } from "@/lib/constants";
 import { AuthButtons } from "@/components/auth-buttons";
 import Image from "next/image";
+import { ImportLetterboxd } from "@/components/import-letterboxd";
 
 type SearchParam =
   | Promise<Record<string, string | string[] | undefined>>
@@ -168,6 +169,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           </div>
         </div>
       )}
+      {userId && <ImportLetterboxd />}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
