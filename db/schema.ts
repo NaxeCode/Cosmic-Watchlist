@@ -1,4 +1,5 @@
 import {
+  boolean,
   integer,
   pgEnum,
   pgTable,
@@ -30,6 +31,8 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   emailVerified: timestamp("email_verified", { withTimezone: true }),
   image: text("image"),
+  publicHandle: text("public_handle").unique(),
+  publicEnabled: boolean("public_enabled").notNull().default(false),
 });
 
 export const accounts = pgTable(
