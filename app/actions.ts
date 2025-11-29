@@ -90,6 +90,18 @@ export async function createItemAction(
 
   const payload = parsed.data;
 
+  let metadataPatch: Record<string, unknown> = {};
+  const needsMetadata = (payload.type === "movie" || payload.type === "tv") &&
+    (process.env.TMDB_API_KEY || process.env.OMDB_API_KEY);
+
+  if (needsMetadata) {
+    const meta = await fetchMetadata(payload.title, payload.type);
+    if (!meta) {
+      return { error: "Could not verify this title via TMDB/OMDb. Check spelling or try another title." };
+    }
+    metadataPatch = metadataToUpdate(meta);
+  }
+
   try {
     const [created] = await db
       .insert(items)
@@ -101,6 +113,7 @@ export async function createItemAction(
         tags: payload.tags ?? null,
         notes: payload.notes ?? null,
         completedAt: resolveCompletedAt(undefined, payload.status),
+        ...metadataPatch,
         userId,
       })
       .returning({ id: items.id });

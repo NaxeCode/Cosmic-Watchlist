@@ -121,6 +121,17 @@ body::after {
   opacity: 1;
 }
 
+/* Hide native number spinners where we render custom steppers */
+input[type="number"].no-spinner::-webkit-outer-spin-button,
+input[type="number"].no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"].no-spinner {
+  -moz-appearance: textfield;
+}
+
 .cosmic-button .orbit {
   position: absolute;
   inset: -30px;

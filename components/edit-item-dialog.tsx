@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Pencil } from "lucide-react";
 import { updateItemAction } from "@/app/actions";
@@ -34,6 +34,7 @@ type ActionState = {
 };
 
 export function EditItemDialog({ item }: { item: Item }) {
+  const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     updateItemAction,
     {},
@@ -42,6 +43,7 @@ export function EditItemDialog({ item }: { item: Item }) {
   useEffect(() => {
     if (state?.success) {
       toast.success(state.success);
+      setOpen(false);
     } else if (state?.error) {
       toast.error(state.error);
     }
@@ -50,9 +52,9 @@ export function EditItemDialog({ item }: { item: Item }) {
   const fieldError = (name: string) => state?.fieldErrors?.[name]?.[0];
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9">
+        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setOpen(true)}>
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>

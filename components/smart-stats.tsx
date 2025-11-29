@@ -16,6 +16,7 @@ export function SmartStats({ items }: { items: Item[] }) {
     0,
   );
   const timeByType = groupTimeByType(completed);
+  const timeByTag = groupTimeByTag(completed, 5);
   const activity = buildActivitySeries(items);
   const heatmap = buildHeatmap(completed);
   const topGenres = topTokens(items, ["genres", "tags"], 5);
@@ -51,6 +52,30 @@ export function SmartStats({ items }: { items: Item[] }) {
             ))
           )}
         </div>
+        {timeByTag.length > 0 && (
+          <div className="space-y-2 rounded-xl border border-border/60 bg-black/20 p-3">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Top tags by time</span>
+              <span className="text-[11px] text-muted-foreground/80">Completed only</span>
+            </div>
+            <div className="space-y-1">
+              {timeByTag.map((row) => (
+                <div key={row.tag} className="flex items-center gap-2">
+                  <div className="w-20 text-[11px] capitalize text-muted-foreground">{row.tag}</div>
+                  <div className="flex-1 h-2 rounded-full bg-black/40 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary"
+                      style={{ width: `${row.pct}%` }}
+                    />
+                  </div>
+                  <div className="w-16 text-right text-[11px] text-muted-foreground">
+                    {Math.round(row.minutes)}m
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </Card>
 
       <Card className="flex flex-col gap-4 rounded-2xl border border-border/70 bg-secondary/40 p-4 shadow-card">
@@ -192,6 +217,27 @@ function groupTimeByType(items: Item[]) {
       minutes,
       pct: Math.max(6, Math.round((minutes / totalMinutes) * 100)),
     }));
+}
+
+function groupTimeByTag(items: Item[], limit = 5) {
+  if (!items.length) return [];
+  const map = new Map<string, number>();
+  for (const item of items) {
+    const minutes = item.runtimeMinutes ?? 0;
+    if (!minutes) continue;
+    const tags = tagsToArray(item.tags);
+    for (const tag of tags) {
+      const key = tag.toLowerCase();
+      map.set(key, (map.get(key) ?? 0) + minutes);
+    }
+  }
+  const entries = Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, limit);
+  const totalMinutes = entries.reduce((sum, [, minutes]) => sum + minutes, 0) || 1;
+  return entries.map(([tag, minutes]) => ({
+    tag,
+    minutes,
+    pct: Math.max(6, Math.round((minutes / totalMinutes) * 100)),
+  }));
 }
 
 function buildActivitySeries(items: Item[]) {
