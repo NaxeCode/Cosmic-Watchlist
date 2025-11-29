@@ -24,6 +24,7 @@ export const itemStatus = pgEnum("item_status", [
   "completed",
   "dropped",
 ]);
+export const eventStatus = pgEnum("event_status", ["open", "done", "archived"]);
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -87,6 +88,7 @@ export const events = pgTable("events", {
   userId: text("user_id")
     .references(() => users.id, { onDelete: "set null" }),
   userAgent: text("user_agent"),
+  status: eventStatus("status").notNull().default("open"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

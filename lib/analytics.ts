@@ -14,6 +14,7 @@ export async function trackEvent(event: string, payload: AnalyticsPayload = {}) 
       payload: trimmed,
       userId: typeof payload.userId === "string" ? payload.userId : null,
       userAgent: typeof payload.userAgent === "string" ? payload.userAgent : null,
+      status: "open",
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {

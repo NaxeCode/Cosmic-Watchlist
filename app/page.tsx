@@ -30,6 +30,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   const session = await auth();
   const userId = session?.user?.id;
   const userImage = session?.user?.image ?? null;
+  const isAdmin = !!session?.user?.admin;
   const aiAvailable = Boolean(process.env.OPENAI_API_KEY);
   const params = await getParams(searchParams);
   const typeParam = Array.isArray(params.type) ? params.type[0] : params.type;
@@ -249,6 +250,14 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                 </div>
               )}
               <AuthButtons isSignedIn={!!userId} />
+              {isAdmin && (
+                <a
+                  href="/admin/feedback"
+                  className="text-xs text-primary underline underline-offset-4 hover:text-primary/80"
+                >
+                  Feedback & bug reports
+                </a>
+              )}
             </div>
           </div>
         </div>
