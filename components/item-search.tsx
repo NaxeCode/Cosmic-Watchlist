@@ -13,15 +13,19 @@ export function ItemSearch({
   currentTag,
   params,
   uniqueTags,
+  titles = [],
 }: {
   currentTitle: string;
   currentTag: string;
   params: Params;
   uniqueTags: string[];
+  titles?: string[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const [titleValue, setTitleValue] = useState(currentTitle);
+  const [lockedTitle, setLockedTitle] = useState(currentTitle || null);
   const initialTags = useMemo(() => {
     return (currentTag || "")
       .split(",")
@@ -47,7 +51,7 @@ export function ItemSearch({
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    const title = (form.get("q") as string)?.trim();
+    const title = (lockedTitle || (form.get("q") as string))?.trim();
 
     const next = new URLSearchParams(searchParams.toString());
     // reset page when searching
@@ -70,21 +74,80 @@ export function ItemSearch({
     return uniqueTags.filter((tag) => tag.toLowerCase().includes(lower)).slice(0, 8);
   }, [tagInput, uniqueTags]);
 
+  const titleSuggestions = useMemo(() => {
+    const lower = titleValue.toLowerCase();
+    if (!lower) return [];
+    return titles
+      .filter((t) => t.toLowerCase().includes(lower))
+      .filter((t) => t.toLowerCase() !== lower)
+      .slice(0, 6);
+  }, [titleValue, titles]);
+
   return (
     <form
       onSubmit={onSubmit}
       className="flex flex-wrap items-start gap-3 rounded-2xl border border-border/60 bg-secondary/40 p-3"
       aria-busy={isPending}
     >
-      <div className="flex min-w-[200px] flex-1 items-center gap-2">
+      <div className="flex min-w-[220px] flex-1 flex-col gap-2">
         <label className="text-xs text-muted-foreground" htmlFor="q">
           Title
         </label>
-        <Input id="q" name="q" defaultValue={currentTitle} placeholder="Search title..." />
+        <div className="flex min-h-11 w-full items-center gap-2 rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-within:ring-2 focus-within:ring-ring">
+          {lockedTitle && (
+            <>
+              <input type="hidden" name="q" value={lockedTitle} />
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-black/30 px-3 py-1 text-sm font-medium capitalize transition hover:border-destructive/70 hover:text-destructive"
+                onClick={() => {
+                  setLockedTitle(null);
+                  setTitleValue("");
+                }}
+              >
+                {lockedTitle}
+                <span className="text-xs">×</span>
+              </button>
+            </>
+          )}
+          {!lockedTitle && (
+            <Input
+              id="q"
+              name="q"
+              placeholder="Search title..."
+              value={titleValue}
+              onChange={(e) => setTitleValue(e.target.value)}
+              autoComplete="off"
+              className="h-auto flex-1 border-0 bg-transparent p-0 text-sm shadow-none outline-none focus-visible:ring-0"
+            />
+          )}
+        </div>
+        {titleSuggestions.length > 0 && !lockedTitle && (
+          <div className="space-y-1 rounded-lg border border-border/60 bg-popover p-2 shadow-card">
+            <div className="text-xs font-semibold text-muted-foreground">Suggestions</div>
+            <div className="max-h-48 overflow-y-auto">
+              {titleSuggestions.map((title) => (
+                <button
+                  type="button"
+                  key={title}
+                  className="flex w-full items-center justify-between gap-2 px-2 py-2 text-left text-sm transition hover:bg-secondary/60"
+                  onClick={() => {
+                    setTitleValue(title);
+                    setLockedTitle(title);
+                  }}
+                >
+                  <span className="font-medium">{title}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <div className="flex min-w-[220px] flex-1 flex-col gap-2">
+        <label className="text-xs text-muted-foreground" htmlFor="tag">
+          Tags
+        </label>
         <div className="flex items-start gap-2">
-          <span className="mt-2 text-xs text-muted-foreground">Tags</span>
           <div className="relative flex-1 space-y-2">
             <Input
               id="tag"
@@ -151,9 +214,11 @@ export function ItemSearch({
           </Button>
         </div>
       </div>
-      <Button type="submit" size="sm" className="self-start" disabled={isPending}>
-        {isPending ? "Updating…" : "Search"}
-      </Button>
+      <div className="flex items-start">
+        <Button type="submit" size="sm" className="mt-[29px] gap-1" disabled={isPending}>
+          {isPending ? "Updating…" : "Search"}
+        </Button>
+      </div>
     </form>
   );
 }

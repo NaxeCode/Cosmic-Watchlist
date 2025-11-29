@@ -14,7 +14,6 @@ export const itemType = pgEnum("item_type", [
   "anime",
   "movie",
   "tv",
-  "youtube",
   "game",
 ]);
 export const itemStatus = pgEnum("item_status", [

@@ -134,6 +134,9 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
         .filter(Boolean),
     ),
   ).sort((a, b) => a.localeCompare(b));
+  const uniqueTitles = Array.from(new Set(allUserItems.map((i) => i.title))).sort((a, b) =>
+    a.localeCompare(b),
+  );
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
@@ -282,7 +285,13 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
             </p>
           </div>
         </div>
-        <ItemSearch currentTitle={queryValue} currentTag={tagValue} params={params} uniqueTags={uniqueTags} />
+        <ItemSearch
+          currentTitle={queryValue}
+          currentTag={tagValue}
+          params={params}
+          uniqueTags={uniqueTags}
+          titles={uniqueTitles}
+        />
         {userId ? (
           results.length === 0 ? (
             <div className="rounded-2xl border border-border/70 bg-secondary/40 p-6 text-center text-muted-foreground">

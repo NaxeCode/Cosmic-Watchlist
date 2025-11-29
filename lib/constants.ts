@@ -1,4 +1,4 @@
-export const ITEM_TYPES = ["anime", "movie", "tv", "youtube", "game"] as const;
+export const ITEM_TYPES = ["anime", "movie", "tv", "game"] as const;
 export const STATUSES = [
   "planned",
   "watching",
