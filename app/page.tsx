@@ -288,6 +288,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
         <ItemSearch
           currentTitle={queryValue}
           currentTag={tagValue}
+          currentType={typeParam}
           params={params}
           uniqueTags={uniqueTags}
           titles={uniqueTitles}

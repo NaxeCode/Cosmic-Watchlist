@@ -34,7 +34,7 @@ export function ItemCard({
 
   const metaLine = [
     item.releaseYear ? String(item.releaseYear) : null,
-    item.runtimeMinutes ? `${item.runtimeMinutes}m` : null,
+    item.runtimeMinutes ? formatRuntime(item.runtimeMinutes) : null,
     studios[0],
   ]
     .filter(Boolean)
@@ -58,6 +58,14 @@ export function ItemCard({
   function capitalize(text: string) {
     if (!text) return "";
     return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  }
+
+  function formatRuntime(minutes: number) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (!hours) return `${minutes}m`;
+    if (!mins) return `${hours}h`;
+    return `${hours}h ${mins}m`;
   }
 
   return (
