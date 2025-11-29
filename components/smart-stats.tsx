@@ -244,11 +244,15 @@ function groupTimeByTag(items: Item[], limit = 5) {
 
 function buildActivitySeries(items: Item[]) {
   const now = new Date();
+  const utcYear = now.getUTCFullYear();
+  const utcMonth = now.getUTCMonth();
+  const formatMonth = new Intl.DateTimeFormat("en-US", { month: "short", timeZone: "UTC" });
+
   const months: { key: string; label: string; count: number }[] = [];
   for (let i = 5; i >= 0; i--) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = `${date.getFullYear()}-${date.getMonth()}`;
-    const label = date.toLocaleString("default", { month: "short" });
+    const date = new Date(Date.UTC(utcYear, utcMonth - i, 1));
+    const key = `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
+    const label = formatMonth.format(date);
     months.push({ key, label, count: 0 });
   }
 
@@ -256,7 +260,7 @@ function buildActivitySeries(items: Item[]) {
     const date = item.completedAt ?? item.updatedAt ?? item.createdAt;
     if (!date) continue;
     const d = new Date(date);
-    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
     const month = months.find((m) => m.key === key);
     if (month) month.count += 1;
   }
@@ -270,24 +274,29 @@ function buildActivitySeries(items: Item[]) {
 
 function buildHeatmap(items: Item[]) {
   const days = 84;
-  const today = new Date();
+  const today = startOfUTC(new Date());
+  const labelFormatter = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+
   const counts = new Map<string, number>();
   for (const item of items) {
     const date = item.completedAt ?? item.updatedAt ?? item.createdAt;
     if (!date) continue;
-    const iso = new Date(date).toISOString().slice(0, 10);
+    const iso = startOfUTC(new Date(date)).toISOString().slice(0, 10);
     counts.set(iso, (counts.get(iso) ?? 0) + 1);
   }
 
   const cells: { key: string; count: number; label: string }[] = [];
   for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - i);
+    const date = addUTCDate(today, -i);
     const key = date.toISOString().slice(0, 10);
     cells.push({
       key,
       count: counts.get(key) ?? 0,
-      label: date.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+      label: labelFormatter.format(date),
     });
   }
 
@@ -322,4 +331,16 @@ function heatColor(count: number, max: number) {
   const end = [56, 189, 248];
   const mix = start.map((v, idx) => Math.round(v + (end[idx] - v) * intensity));
   return `rgba(${mix[0]}, ${mix[1]}, ${mix[2]}, ${0.45 + intensity * 0.35})`;
+}
+
+function startOfUTC(date: Date) {
+  const d = new Date(date);
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+}
+
+function addUTCDate(date: Date, deltaDays: number) {
+  const d = new Date(date);
+  d.setUTCDate(d.getUTCDate() + deltaDays);
+  return d;
 }
