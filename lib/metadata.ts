@@ -105,11 +105,20 @@ async function fetchFromTmdb(title: string, type: string, apiKey: string): Promi
     const details = await safeJsonFetch(detailsUrl);
     if (!details) return null;
 
-    const runtimeMinutes =
-      details.runtime ??
+    const episodeRuntime =
       (Array.isArray(details.episode_run_time) ? details.episode_run_time[0] : undefined) ??
       details.last_episode_to_air?.runtime ??
       null;
+
+    let runtimeMinutes =
+      details.runtime ??
+      episodeRuntime ??
+      null;
+
+    // For TV/anime, store approximate total runtime = episode runtime * episode count when available.
+    if (tmdbType === "tv" && episodeRuntime && details.number_of_episodes) {
+      runtimeMinutes = episodeRuntime * details.number_of_episodes;
+    }
 
     const cast =
       details.credits?.cast

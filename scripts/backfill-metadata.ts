@@ -27,12 +27,11 @@ async function main() {
   console.log(`Fetching up to ${limit} items missing poster/synopsis...`);
 
   const rows = await db.query.items.findMany({
-    where: or(isNull(items.posterUrl), eq(items.posterUrl, "")),
     orderBy: (fields, operators) => operators.desc(fields.createdAt),
     limit,
   });
 
-  console.log(`Found ${rows.length} item(s) to enrich.`);
+  console.log(`Found ${rows.length} item(s) to enrich (all types).`);
 
   let updated = 0;
   for (const row of rows) {

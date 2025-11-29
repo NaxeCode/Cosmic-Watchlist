@@ -1,22 +1,26 @@
 "use client";
 
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useMemo, useState, useTransition } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X, Tag as TagIcon, Plus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ITEM_TYPES } from "@/lib/constants";
 
 type Params = Record<string, string | string[] | undefined>;
 
 export function ItemSearch({
   currentTitle,
   currentTag,
+  currentType,
   params,
   uniqueTags,
   titles = [],
 }: {
   currentTitle: string;
   currentTag: string;
+  currentType?: string;
   params: Params;
   uniqueTags: string[];
   titles?: string[];
@@ -26,6 +30,9 @@ export function ItemSearch({
   const [isPending, startTransition] = useTransition();
   const [titleValue, setTitleValue] = useState(currentTitle);
   const [lockedTitle, setLockedTitle] = useState(currentTitle || null);
+  const [typeFilter, setTypeFilter] = useState<string>(currentType ?? "");
+  const tagAreaRef = useRef<HTMLDivElement>(null);
+  const tagInputRef = useRef<HTMLInputElement>(null);
   const initialTags = useMemo(() => {
     return (currentTag || "")
       .split(",")
@@ -42,6 +49,7 @@ export function ItemSearch({
     setTags((prev) => (prev.includes(formatted) ? prev : [...prev, formatted]));
     setTagInput("");
     setShowSuggestions(false);
+    tagInputRef.current?.focus();
   };
 
   const removeTag = (value: string) => {
@@ -64,6 +72,9 @@ export function ItemSearch({
     else next.delete("tag");
 
     startTransition(() => {
+      if (typeFilter && typeFilter !== "all") next.set("type", typeFilter);
+      else next.delete("type");
+
       router.push(`/?${next.toString()}`, { scroll: false });
     });
     setShowSuggestions(false);
@@ -71,8 +82,14 @@ export function ItemSearch({
 
   const filteredTags = useMemo(() => {
     const lower = tagInput.toLowerCase();
-    return uniqueTags.filter((tag) => tag.toLowerCase().includes(lower)).slice(0, 8);
-  }, [tagInput, uniqueTags]);
+    const selectedSet = new Set(tags.map((t) => t.toLowerCase()));
+    return uniqueTags
+      .filter((tag) => {
+        const lowerTag = tag.toLowerCase();
+        return lowerTag.includes(lower) && !selectedSet.has(lowerTag);
+      })
+      .slice(0, 8);
+  }, [tagInput, uniqueTags, tags]);
 
   const titleSuggestions = useMemo(() => {
     const lower = titleValue.toLowerCase();
@@ -82,6 +99,16 @@ export function ItemSearch({
       .filter((t) => t.toLowerCase() !== lower)
       .slice(0, 6);
   }, [titleValue, titles]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (tagAreaRef.current && !tagAreaRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <form
@@ -143,26 +170,61 @@ export function ItemSearch({
           </div>
         )}
       </div>
+      <div className="flex min-w-[180px] flex-col gap-2">
+        <label className="text-xs text-muted-foreground">Type</label>
+        <Select
+          value={typeFilter || "all"}
+          onValueChange={(v) => {
+            const nextType = v === "all" ? "" : v;
+            setTypeFilter(nextType);
+
+            const title = (lockedTitle || titleValue)?.trim();
+            const next = new URLSearchParams(searchParams.toString());
+            next.set("page", "1");
+
+            if (title) next.set("q", title);
+            else next.delete("q");
+
+            if (tags.length) next.set("tag", tags.join(", "));
+            else next.delete("tag");
+
+            if (nextType) next.set("type", nextType);
+            else next.delete("type");
+
+            startTransition(() => {
+              router.push(`/?${next.toString()}`, { scroll: false });
+            });
+          }}
+        >
+          <SelectTrigger className="h-11">
+            <SelectValue placeholder="All types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            {ITEM_TYPES.map((type) => (
+              <SelectItem key={type} value={type}>
+                {type}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <div className="flex min-w-[220px] flex-1 flex-col gap-2">
         <label className="text-xs text-muted-foreground" htmlFor="tag">
           Tags
         </label>
-        <div className="flex items-start gap-2">
+        <div className="flex items-start gap-2" ref={tagAreaRef}>
           <div className="relative flex-1 space-y-2">
             <Input
               id="tag"
               name="tag"
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              placeholder="Add a tag and press Enter"
+              ref={tagInputRef}
+              value=""
+              readOnly
+              placeholder="Select tags"
               autoComplete="off"
               onFocus={() => setShowSuggestions(true)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === ",") {
-                  e.preventDefault();
-                  addTag(tagInput);
-                }
-              }}
+              onClick={() => setShowSuggestions(true)}
             />
             {showSuggestions && filteredTags.length > 0 && (
               <div className="absolute z-10 mt-1 w-full rounded-lg border border-border/60 bg-popover shadow-card">
@@ -203,15 +265,6 @@ export function ItemSearch({
               ))}
             </div>
           </div>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => addTag(tagInput)}
-            className="mt-1 gap-1 self-start"
-          >
-            <Plus className="h-3 w-3" /> Add
-          </Button>
         </div>
       </div>
       <div className="flex items-start">

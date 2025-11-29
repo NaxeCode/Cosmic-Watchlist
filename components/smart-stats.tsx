@@ -37,17 +37,12 @@ export function SmartStats({ items }: { items: Item[] }) {
             <p className="text-sm text-muted-foreground">No runtime data yet.</p>
           ) : (
             timeByType.map((row) => (
-              <div key={row.type} className="space-y-1">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="capitalize">{row.type}</span>
-                  <span>{Math.round(row.minutes)} min</span>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-black/40">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary"
-                    style={{ width: `${row.pct}%` }}
-                  />
-                </div>
+              <div key={row.type} className="flex items-center justify-between rounded-lg border border-border/60 bg-black/20 px-3 py-2 text-xs text-muted-foreground">
+                <span className="capitalize">{row.type}</span>
+                <span>
+                  {Math.round(row.minutes)} min
+                  {row.minutes >= 60 ? ` (${formatHours(row.minutes)})` : ""}
+                </span>
               </div>
             ))
           )}
@@ -200,6 +195,13 @@ function formatDuration(minutes: number) {
   const days = Math.floor(hours / 24);
   const leftoverHours = hours % 24;
   return `${days}d ${leftoverHours}h`;
+}
+
+function formatHours(minutes: number) {
+  const hours = minutes / 60;
+  if (hours < 1) return "";
+  if (hours < 10) return `${hours.toFixed(1)} hr`;
+  return `${Math.round(hours)} hr`;
 }
 
 function groupTimeByType(items: Item[]) {

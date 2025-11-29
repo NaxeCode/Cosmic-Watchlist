@@ -14,9 +14,10 @@ import {
 } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { STATUSES } from "@/lib/constants";
+import { ITEM_TYPES, STATUSES } from "@/lib/constants";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { bulkUpdateStatusAction } from "@/app/actions";
+import { DialogTitle } from "@/components/ui/dialog";
 
 type MinimalItem = {
   id: number;
@@ -40,6 +41,7 @@ export function CommandPalette({
   const [open, setOpen] = useState(false);
   const [internalSelected, setInternalSelected] = useState<number[]>([]);
   const [status, setStatus] = useState<string | undefined>(undefined);
+  const [typeFilter, setTypeFilter] = useState<string | undefined>(undefined);
   const [pending, startTransition] = useTransition();
   const selected = controlledSelected ?? internalSelected;
   const setSelected = onSelectedChange ?? setInternalSelected;
@@ -69,6 +71,11 @@ export function CommandPalette({
 
   const selectAll = () => applySelection(items.map((i) => i.id));
   const clearAll = () => applySelection([]);
+
+  const filteredItems = useMemo(() => {
+    if (!typeFilter) return items;
+    return items.filter((i) => i.type === typeFilter);
+  }, [items, typeFilter]);
 
   const onBulkUpdate = () => {
     if (!selected.length) {
@@ -101,6 +108,7 @@ export function CommandPalette({
       )}
       <CommandDialog open={open} onOpenChange={setOpen}>
         <div className="flex flex-col gap-3 px-5 pt-5">
+          <DialogTitle className="sr-only">Command Palette</DialogTitle>
           <div className="text-sm text-muted-foreground">
             Search your entire library, select items, and bulk update status.
           </div>
@@ -129,6 +137,19 @@ export function CommandPalette({
                 ))}
               </SelectContent>
             </Select>
+            <Select value={typeFilter ?? "all"} onValueChange={(v) => setTypeFilter(v === "all" ? undefined : v)}>
+              <SelectTrigger className="h-10 w-[180px]">
+                <SelectValue placeholder="All types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All types</SelectItem>
+                {ITEM_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button
               variant="default"
               size="sm"
@@ -141,12 +162,12 @@ export function CommandPalette({
         </div>
         <CommandList className="custom-scroll max-h-[520px] overflow-y-auto px-3 pb-3">
           <CommandEmpty>No items found.</CommandEmpty>
-          <CommandGroup heading="Items" className="px-2">
-            {items.map((item) => (
-              <CommandItem
-                key={item.id}
-                value={`${item.title} ${item.tags ?? ""}`}
-                onSelect={() => toggleSelect(item.id)}
+            <CommandGroup heading="Items" className="px-2">
+              {filteredItems.map((item) => (
+                <CommandItem
+                  key={item.id}
+                  value={`${item.title} ${item.tags ?? ""}`}
+                  onSelect={() => toggleSelect(item.id)}
                 className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-3 text-sm shadow-sm"
               >
                 <input
