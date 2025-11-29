@@ -5,6 +5,7 @@ import { ItemCard } from "@/components/item-card";
 import { PaginationControls } from "@/components/pagination-controls";
 import { CommandPalette } from "@/components/command-palette";
 import { AiCategorizeButtons } from "@/components/ai-categorize-button";
+import { useCallback } from "react";
 type Item = any;
 type Minimal = {
   id: number;
@@ -36,9 +37,9 @@ export function ItemsView({
 }) {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
-  const toggleSelect = (id: number) => {
+  const toggleSelect = useCallback((id: number) => {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-  };
+  }, []);
 
   return (
     <div className="space-y-6">

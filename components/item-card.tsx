@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { memo, useCallback, useMemo, useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import { CalendarClock, ChevronDown, ChevronUp, Clock, Star, Tag as TagIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,12 @@ import { DeleteButton } from "@/components/delete-button";
 import { tagsToArray } from "@/lib/utils";
 type Item = any;
 
-export function ItemCard({
+const createdFormatter = new Intl.DateTimeFormat("en", {
+  month: "short",
+  day: "numeric",
+});
+
+export const ItemCard = memo(function ItemCard({
   item,
   index,
   selected,
@@ -26,47 +31,47 @@ export function ItemCard({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
-  const tags = tagsToArray(item.tags);
-  const genres = tagsToArray(item.genres);
-  const studios = tagsToArray(item.studios);
-  const cast = tagsToArray(item.cast);
   const [showNotes, setShowNotes] = useState(false);
 
-  const metaLine = [
-    item.releaseYear ? String(item.releaseYear) : null,
-    item.runtimeMinutes ? formatRuntime(item.runtimeMinutes) : null,
-    studios[0],
-  ]
-    .filter(Boolean)
-    .join(" • ");
+  const { tags, genres, studios, cast } = useMemo(
+    () => ({
+      tags: tagsToArray(item.tags),
+      genres: tagsToArray(item.genres),
+      studios: tagsToArray(item.studios),
+      cast: tagsToArray(item.cast),
+    }),
+    [item.cast, item.genres, item.studios, item.tags],
+  );
 
-  const createdLabel = new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-  }).format(new Date(item.createdAt));
+  const metaLine = useMemo(
+    () =>
+      [
+        item.releaseYear ? String(item.releaseYear) : null,
+        item.runtimeMinutes ? formatRuntime(item.runtimeMinutes) : null,
+        studios[0],
+      ]
+        .filter(Boolean)
+        .join(" \u0007 "),
+    [item.releaseYear, item.runtimeMinutes, studios],
+  );
 
-  const onTagClick = (tag: string) => {
-    const formatted = capitalize(tag);
-    const next = new URLSearchParams(searchParams.toString());
-    next.set("tag", formatted);
-    next.set("page", "1");
-    startTransition(() => {
-      router.push(`/?${next.toString()}`, { scroll: false });
-    });
-  };
+  const createdLabel = useMemo(
+    () => createdFormatter.format(new Date(item.createdAt)),
+    [item.createdAt],
+  );
 
-  function capitalize(text: string) {
-    if (!text) return "";
-    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
-  }
-
-  function formatRuntime(minutes: number) {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (!hours) return `${minutes}m`;
-    if (!mins) return `${hours}h`;
-    return `${hours}h ${mins}m`;
-  }
+  const onTagClick = useCallback(
+    (tag: string) => {
+      const formatted = capitalize(tag);
+      const next = new URLSearchParams(searchParams.toString());
+      next.set("tag", formatted);
+      next.set("page", "1");
+      startTransition(() => {
+        router.push(`/?${next.toString()}`, { scroll: false });
+      });
+    },
+    [router, searchParams, startTransition],
+  );
 
   return (
     <motion.div
@@ -147,23 +152,23 @@ export function ItemCard({
           )}
 
           <div className="flex flex-wrap items-center gap-2">
-          {genres.concat(tags).length > 0 ? (
-            Array.from(new Set([...genres, ...tags])).map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => onTagClick(tag)}
-                className="inline-flex items-center rounded-full border border-border/70 bg-black/30 px-2 py-1 text-[10px] capitalize transition hover:border-primary/60 hover:text-foreground"
-              >
-                <TagIcon className="mr-1 h-3 w-3" />
-                {tag}
-              </button>
-            ))
-          ) : (
-            <Badge variant="outline" className="text-[10px]">
-              tag me later
-            </Badge>
-          )}
+            {genres.concat(tags).length > 0 ? (
+              Array.from(new Set([...genres, ...tags])).map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => onTagClick(tag)}
+                  className="inline-flex items-center rounded-full border border-border/70 bg-black/30 px-2 py-1 text-[10px] capitalize transition hover:border-primary/60 hover:text-foreground"
+                >
+                  <TagIcon className="mr-1 h-3 w-3" />
+                  {tag}
+                </button>
+              ))
+            ) : (
+              <Badge variant="outline" className="text-[10px]">
+                tag me later
+              </Badge>
+            )}
           </div>
 
           <CardContent className="space-y-2 p-0">
@@ -185,4 +190,17 @@ export function ItemCard({
       </Card>
     </motion.div>
   );
+});
+
+function capitalize(text: string) {
+  if (!text) return "";
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+}
+
+function formatRuntime(minutes: number) {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (!hours) return `${minutes}m`;
+  if (!mins) return `${hours}h`;
+  return `${hours}h ${mins}m`;
 }
