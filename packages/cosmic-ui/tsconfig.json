@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": false,
+    "noEmit": false,
+    "incremental": false,
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*"]
+}

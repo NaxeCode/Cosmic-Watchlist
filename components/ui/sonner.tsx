@@ -1,3 +1,1 @@
-import { Toaster as SonnerToaster } from "sonner";
-
-export const Toaster = SonnerToaster;
+export { Toaster } from "@stargazers-stella/cosmic-ui";
