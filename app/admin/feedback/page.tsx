@@ -9,8 +9,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Status, updateEventStatusAction } from "./actions";
 
-type Status = "open" | "done" | "archived";
-
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -86,9 +84,12 @@ export default async function AdminFeedbackPage({
           Admin
         </Badge>
         <h1 className="text-2xl font-semibold">Feedback & bug reports</h1>
-        <Button asChild variant="ghost" size="sm" className="ml-auto">
-          <a href="/">← Home</a>
-        </Button>
+        <a
+          href="/"
+          className="ml-auto text-sm text-primary underline underline-offset-4 hover:text-primary/80"
+        >
+          ← Home
+        </a>
       </div>
       <StatusFilters active={statusFilter} />
       {rows.length === 0 ? (
