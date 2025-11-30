@@ -1,4 +1,5 @@
 "use client";
+"use client";
 
 export {
   Select,
@@ -6,7 +7,5 @@ export {
   SelectValue,
   SelectTrigger,
   SelectContent,
-  SelectLabel,
   SelectItem,
-  SelectSeparator,
 } from "@stargazers-stella/cosmic-ui";

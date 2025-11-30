@@ -9,26 +9,26 @@ import { events, users } from "@/db/schema";
 
 export type Status = "open" | "done" | "archived";
 
-export async function updateEventStatusAction(formData: FormData) {
+export async function updateEventStatusAction(formData: FormData): Promise<void> {
   const id = Number(formData.get("id"));
   const status = (formData.get("status") as Status | null) ?? "open";
 
   if (!Number.isInteger(id) || id <= 0) {
-    return { error: "Invalid event id" };
+    return;
   }
   if (!["open", "done", "archived"].includes(status)) {
-    return { error: "Invalid status" };
+    return;
   }
 
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return { error: "Not signed in" };
+  if (!userId) return;
 
   const user = await db.query.users.findFirst({
     where: eq(users.id, userId),
     columns: { admin: true },
   });
-  if (!user?.admin) return { error: "Not authorized" };
+  if (!user?.admin) return;
 
   await db.update(events).set({ status }).where(eq(events.id, id));
   revalidatePath("/admin/feedback");

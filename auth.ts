@@ -5,12 +5,19 @@ import { db } from "@/db";
 import { accounts, sessions, users, verificationTokens } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
+const nextAuth = NextAuth as unknown as (config: any) => {
+  handlers: any;
+  auth: any;
+  signIn: any;
+  signOut: any;
+};
+
 export const {
   handlers,
   auth,
   signIn,
   signOut,
-} = NextAuth({
+} = nextAuth({
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
@@ -27,7 +34,7 @@ export const {
     strategy: "database",
   },
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user }: { user: any }) {
       const adminEmails = (process.env.ADMIN_EMAILS ?? "")
         .split(",")
         .map((v) => v.trim().toLowerCase())
@@ -42,7 +49,7 @@ export const {
       }
       return true;
     },
-    async session({ session, user }) {
+    async session({ session, user }: { session: any; user: any }) {
       if (session.user) {
         session.user.id = user.id;
         session.user.admin = Boolean((user as any).admin);
