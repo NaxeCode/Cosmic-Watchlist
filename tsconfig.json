@@ -21,8 +21,8 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@stargazers-stella/cosmic-ui": ["packages/cosmic-ui/src"],
-      "@stargazers-stella/cosmic-ui/*": ["packages/cosmic-ui/src/*"]
+      "@stargazers-stella/cosmic-ui": ["./node_modules/@stargazers-stella/cosmic-ui"],
+      "@stargazers-stella/cosmic-ui/*": ["./node_modules/@stargazers-stella/cosmic-ui/*"]
     }
   },
   "include": [

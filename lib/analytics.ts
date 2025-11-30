@@ -1,4 +1,3 @@
-import { db } from "@/db";
 import { events } from "@/db/schema";
 
 type AnalyticsPayload = Record<string, unknown>;
@@ -6,6 +5,14 @@ type AnalyticsPayload = Record<string, unknown>;
 const MAX_PAYLOAD_CHARS = 5000;
 
 export async function trackEvent(event: string, payload: AnalyticsPayload = {}) {
+  const db = await getDb();
+  if (!db) {
+    if (process.env.NODE_ENV === "development") {
+      console.debug(`[analytics] ${event}`, payload);
+    }
+    return;
+  }
+
   try {
     const safeJson = safePayload(payload);
     const trimmed = trimPayload(safeJson);
@@ -20,6 +27,24 @@ export async function trackEvent(event: string, payload: AnalyticsPayload = {}) 
     if (process.env.NODE_ENV === "development") {
       console.warn("[analytics] trackEvent failed", error);
     }
+  }
+}
+
+let cachedDb: any | null = null;
+
+async function getDb() {
+  if (process.env.SKIP_ANALYTICS === "true") return null;
+  if (!process.env.DATABASE_URL) return null;
+  if (cachedDb) return cachedDb;
+  try {
+    const mod = await import("@/db");
+    cachedDb = mod.db;
+    return cachedDb;
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[analytics] failed to load db", error);
+    }
+    return null;
   }
 }
 

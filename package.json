@@ -2,9 +2,6 @@
   "name": "watchlist",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -20,8 +17,8 @@
     "@radix-ui/react-dropdown-menu": "^2.1.2",
     "@radix-ui/react-select": "^2.1.2",
     "@radix-ui/react-slot": "^1.1.2",
+    "@stargazers-stella/cosmic-ui": "^0.1.1",
     "@vercel/speed-insights": "^1.2.0",
-    "@stargazers-stella/cosmic-ui": "workspace:*",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
@@ -48,13 +45,13 @@
     "@types/react-dom": "^19",
     "@vitest/coverage-v8": "^2.1.9",
     "autoprefixer": "^10.4.20",
-    "tsup": "^8.3.0",
-    "rimraf": "^6.0.1",
     "drizzle-kit": "^0.31.7",
     "eslint": "^9",
     "eslint-config-next": "16.0.5",
     "postcss": "^8.4.47",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^3.4.14",
+    "tsup": "^8.3.0",
     "tsx": "^4.19.2",
     "typescript": "^5",
     "vitest": "^2.1.4"
