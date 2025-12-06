@@ -126,14 +126,14 @@ export function ItemSearch({
               <input type="hidden" name="q" value={lockedTitle} />
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-black/30 px-3 py-1 text-sm font-medium capitalize transition hover:border-destructive/70 hover:text-destructive"
+                className="surface-muted inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-1 text-sm font-medium capitalize transition hover:border-destructive/70 hover:text-destructive"
                 onClick={() => {
                   setLockedTitle(null);
                   setTitleValue("");
                 }}
               >
                 {lockedTitle}
-                <span className="text-xs">×</span>
+                <span className="text-xs">x</span>
               </button>
             </>
           )}
@@ -249,7 +249,7 @@ export function ItemSearch({
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="group inline-flex items-center gap-1 rounded-full border border-border/70 bg-black/30 px-3 py-1 text-xs capitalize"
+                  className="surface-muted group inline-flex items-center gap-1 rounded-full border border-border/70 px-3 py-1 text-xs capitalize"
                 >
                   <TagIcon className="h-3 w-3" />
                   {tag}

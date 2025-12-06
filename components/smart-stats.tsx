@@ -37,7 +37,7 @@ export function SmartStats({ items }: { items: Item[] }) {
             <p className="text-sm text-muted-foreground">No runtime data yet.</p>
           ) : (
             timeByType.map((row) => (
-              <div key={row.type} className="flex items-center justify-between rounded-lg border border-border/60 bg-black/20 px-3 py-2 text-xs text-muted-foreground">
+              <div key={row.type} className="surface-muted flex items-center justify-between rounded-lg border border-border/60 px-3 py-2 text-xs text-muted-foreground">
                 <span className="capitalize">{row.type}</span>
                 <span>
                   {Math.round(row.minutes)} min
@@ -48,7 +48,7 @@ export function SmartStats({ items }: { items: Item[] }) {
           )}
         </div>
         {timeByTag.length > 0 && (
-          <div className="space-y-2 rounded-xl border border-border/60 bg-black/20 p-3">
+          <div className="surface space-y-2 rounded-xl border border-border/60 p-3">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Top tags by time</span>
               <span className="text-[11px] text-muted-foreground/80">Completed only</span>
@@ -57,7 +57,7 @@ export function SmartStats({ items }: { items: Item[] }) {
               {timeByTag.map((row) => (
                 <div key={row.tag} className="flex items-center gap-2">
                   <div className="w-20 text-[11px] capitalize text-muted-foreground">{row.tag}</div>
-                  <div className="flex-1 h-2 rounded-full bg-black/40 overflow-hidden">
+                  <div className="surface-inset flex-1 h-2 rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary"
                       style={{ width: `${row.pct}%` }}
@@ -82,7 +82,7 @@ export function SmartStats({ items }: { items: Item[] }) {
           <Badge variant="outline">{completed.length} done</Badge>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-black/30">
+          <div className="surface-strong flex h-24 w-24 items-center justify-center rounded-full">
             <div
               className="relative h-20 w-20 rounded-full bg-gradient-to-br from-primary/80 to-primary shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
               style={{
@@ -104,7 +104,7 @@ export function SmartStats({ items }: { items: Item[] }) {
             <div className="flex gap-1">
               {activity.map((row) => (
                 <div key={row.label} className="flex-1 space-y-1">
-                  <div className="h-12 overflow-hidden rounded-md bg-black/30">
+                  <div className="surface-inset h-12 overflow-hidden rounded-md">
                     <div
                       className="h-full w-full bg-gradient-to-t from-primary/70 via-primary/40 to-transparent"
                       style={{ height: `${row.height}%` }}
@@ -119,7 +119,7 @@ export function SmartStats({ items }: { items: Item[] }) {
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Heatmap</p>
           <div
-            className="grid grid-cols-12 gap-1 rounded-xl border border-border/60 bg-black/40 p-2"
+            className="surface-inset grid grid-cols-12 gap-1 rounded-xl border border-border/60 p-2"
             style={{ gridAutoRows: "12px" }}
           >
             {heatmap.cells.map((cell) => (
@@ -153,7 +153,7 @@ export function SmartStats({ items }: { items: Item[] }) {
             ) : (
               <div className="space-y-2">
                 {topGenres.map((row) => (
-                  <div key={row.name} className="flex items-center justify-between rounded-lg border border-border/60 bg-black/30 px-3 py-2">
+                  <div key={row.name} className="surface-muted flex items-center justify-between rounded-lg border border-border/60 px-3 py-2">
                     <div className="flex items-center gap-2 text-sm">
                       <span className="h-2 w-2 rounded-full bg-primary" />
                       <span className="capitalize">{row.name}</span>
@@ -171,7 +171,7 @@ export function SmartStats({ items }: { items: Item[] }) {
             ) : (
               <div className="space-y-2">
                 {topStudios.map((row) => (
-                  <div key={row.name} className="flex items-center justify-between rounded-lg border border-border/60 bg-black/30 px-3 py-2">
+                  <div key={row.name} className="surface-muted flex items-center justify-between rounded-lg border border-border/60 px-3 py-2">
                     <div className="flex items-center gap-2 text-sm">
                       <span className="h-2 w-2 rounded-full bg-emerald-400" />
                       <span className="capitalize">{row.name}</span>

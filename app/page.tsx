@@ -47,7 +47,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   if (!userId) {
     return (
       <main className="mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center gap-6 px-6 py-16">
-        <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-[#0f1020] via-[#0b0c18] to-[#070710] p-10 shadow-card text-center">
+        <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-white via-indigo-50 to-slate-100 p-10 shadow-card text-center dark:from-[#0f1020] dark:via-[#0b0c18] dark:to-[#070710]">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(124,58,237,0.28),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(14,165,233,0.22),transparent_30%),radial-gradient(circle_at_50%_80%,rgba(236,72,153,0.16),transparent_32%)] blur-[1px]" />
           <div className="relative space-y-4">
             <Badge variant="glow" className="text-xs uppercase tracking-[0.2em]">
@@ -186,7 +186,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
 
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-12">
-      <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-[#0f1020] via-[#0b0c18] to-[#070710] p-8 shadow-card">
+      <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-white via-indigo-50 to-slate-100 p-8 shadow-card dark:from-[#0f1020] dark:via-[#0b0c18] dark:to-[#070710]">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(124,58,237,0.28),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(14,165,233,0.22),transparent_30%),radial-gradient(circle_at_50%_80%,rgba(236,72,153,0.16),transparent_32%)] blur-[1px]" />
         <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-4">
@@ -213,7 +213,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
               <Badge variant="outline">Framer Motion</Badge>
             </div>
           </div>
-          <div className="flex flex-col items-start gap-3 rounded-2xl border border-border/60 bg-black/30 p-5 shadow-inner backdrop-blur-xl">
+          <div className="surface-strong flex flex-col items-start gap-3 rounded-2xl border border-border/60 p-5 shadow-inner backdrop-blur-xl">
             <div className="flex items-center gap-2 text-sm font-medium text-foreground/80">
               <span className="h-2 w-2 rounded-full bg-primary shadow-glow" />
               Quick stats

@@ -52,7 +52,7 @@ export function Recommendations({ recommendations }: { recommendations: Recommen
 function Poster({ posterUrl, title }: { posterUrl?: string; title: string }) {
   if (!posterUrl) {
     return (
-      <div className="flex h-24 w-16 items-center justify-center rounded-lg border border-dashed border-border/60 bg-black/30 text-[10px] text-muted-foreground">
+      <div className="surface-muted flex h-24 w-16 items-center justify-center rounded-lg border border-dashed border-border/60 text-[10px] text-muted-foreground">
         No poster
       </div>
     );

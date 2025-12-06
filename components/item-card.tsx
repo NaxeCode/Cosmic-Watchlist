@@ -81,7 +81,7 @@ export const ItemCard = memo(function ItemCard({
     >
       <Card className="relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-border/70 bg-secondary/40 p-3 shadow-sm md:flex-row">
         <div className="flex flex-col items-center gap-2">
-          <label className="flex items-center gap-1.5 rounded-full bg-black/30 px-2 py-1 shadow-inner">
+          <label className="surface-muted flex items-center gap-1.5 rounded-full px-2 py-1 shadow-inner">
             <input
               type="checkbox"
               className="h-4 w-4 cursor-pointer rounded border border-border/70 bg-transparent accent-primary"
@@ -94,7 +94,7 @@ export const ItemCard = memo(function ItemCard({
             {item.status}
           </Badge>
           {item.rating !== null && item.rating !== undefined && (
-            <span className="flex items-center gap-1 rounded-full bg-white/5 px-2 py-1 text-[11px] font-medium">
+            <span className="surface-muted flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium">
               <Star className="h-3 w-3 text-amber-400" />
               {item.rating}/10
             </span>
@@ -105,7 +105,7 @@ export const ItemCard = memo(function ItemCard({
           </div>
         </div>
 
-        <div className="relative h-32 w-24 overflow-hidden rounded-xl border border-border/70 bg-black/40 shadow-inner">
+        <div className="surface-strong relative h-32 w-24 overflow-hidden rounded-xl border border-border/70 shadow-inner">
           {item.posterUrl ? (
             <Image src={item.posterUrl} alt={item.title} fill sizes="120px" className="object-cover" />
           ) : (
@@ -158,7 +158,7 @@ export const ItemCard = memo(function ItemCard({
                   key={tag}
                   type="button"
                   onClick={() => onTagClick(tag)}
-                  className="inline-flex items-center rounded-full border border-border/70 bg-black/30 px-2 py-1 text-[10px] capitalize transition hover:border-primary/60 hover:text-foreground"
+                  className="surface-muted inline-flex items-center rounded-full border border-border/70 px-2 py-1 text-[10px] capitalize transition hover:border-primary/60 hover:text-foreground"
                 >
                   <TagIcon className="mr-1 h-3 w-3" />
                   {tag}
@@ -181,7 +181,7 @@ export const ItemCard = memo(function ItemCard({
               {showNotes ? "Hide notes" : "Show notes"}
             </button>
             {showNotes && (
-              <div className="rounded-lg border border-border/60 bg-black/30 p-2 text-xs leading-relaxed text-foreground/90">
+              <div className="surface-inset rounded-lg border border-border/60 p-2 text-xs leading-relaxed text-foreground/90">
                 {item.notes?.trim() ? item.notes : "No notes yet."}
               </div>
             )}

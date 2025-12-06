@@ -190,17 +190,17 @@ export function ItemForm() {
                   <input type="hidden" name="title" value={lockedTitle} />
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-black/30 px-3 py-1 text-sm font-medium capitalize transition hover:border-destructive/70 hover:text-destructive"
-                onClick={() => {
-                  setLockedTitle(null);
-                  setTitleValue("");
-                  setSuggestionsOpen(false);
-                  setSuggestions([]);
-                }}
-              >
-                {lockedTitle}
-                <span className="text-xs">×</span>
-              </button>
+                    className="surface-muted inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-1 text-sm font-medium capitalize transition hover:border-destructive/70 hover:text-destructive"
+                    onClick={() => {
+                      setLockedTitle(null);
+                      setTitleValue("");
+                      setSuggestionsOpen(false);
+                      setSuggestions([]);
+                    }}
+                  >
+                    {lockedTitle}
+                    <span className="text-xs">x</span>
+                  </button>
                 </>
               )}
               {!lockedTitle && (
@@ -230,15 +230,15 @@ export function ItemForm() {
                       key={`${s.title}-${s.year ?? ""}-${s.type}`}
                       type="button"
                       className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm transition hover:bg-secondary/60"
-                    onClick={() => {
-                      setTitleValue(s.title);
-                      setTypeValue(s.type);
-                      setSuggestionsOpen(false);
-                      setSuggestions([]);
-                      setLockedTitle(s.title);
-                    }}
-                  >
-                      <div className="relative h-12 w-8 overflow-hidden rounded-md border border-border/60 bg-black/30">
+                      onClick={() => {
+                        setTitleValue(s.title);
+                        setTypeValue(s.type);
+                        setSuggestionsOpen(false);
+                        setSuggestions([]);
+                        setLockedTitle(s.title);
+                      }}
+                    >
+                      <div className="surface-inset relative h-12 w-8 overflow-hidden rounded-md border border-border/60">
                         {s.posterUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -423,17 +423,17 @@ export function ItemForm() {
           </p>
           <div className="flex flex-wrap gap-3 text-muted-foreground">
             {autofillPreview.releaseYear && (
-              <span className="rounded-full bg-black/30 px-3 py-1 text-xs text-foreground/90">
+              <span className="surface-muted rounded-full px-3 py-1 text-xs text-foreground/90">
                 Year: {autofillPreview.releaseYear}
               </span>
             )}
             {autofillPreview.runtimeMinutes && (
-              <span className="rounded-full bg-black/30 px-3 py-1 text-xs text-foreground/90">
+              <span className="surface-muted rounded-full px-3 py-1 text-xs text-foreground/90">
                 Runtime: {autofillPreview.runtimeMinutes}m
               </span>
             )}
             {autofillPreview.cast?.length ? (
-              <span className="rounded-full bg-black/30 px-3 py-1 text-xs text-foreground/90">
+              <span className="surface-muted rounded-full px-3 py-1 text-xs text-foreground/90">
                 Cast: {autofillPreview.cast.slice(0, 4).join(", ")}
               </span>
             ) : null}
