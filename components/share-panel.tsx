@@ -98,7 +98,7 @@ export function SharePanel({ initialHandle, initialEnabled }: Props) {
         </div>
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
-        <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-black/20 px-3 py-2">
+        <div className="surface-muted flex items-center gap-2 rounded-xl border border-border/70 px-3 py-2">
           <Link2 className="h-4 w-4 text-muted-foreground" />
           <input
             value={shareUrl}

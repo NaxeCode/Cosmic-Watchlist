@@ -106,7 +106,7 @@ export function FeedbackPanel() {
                 Area
                 <select
                   name="area"
-                  className="mt-1 w-full rounded-md border border-border/60 bg-black/30 px-3 py-2 text-sm text-foreground shadow-inner"
+                  className="surface-inset mt-1 w-full rounded-md border border-border/60 px-3 py-2 text-sm text-foreground shadow-inner"
                   defaultValue="general"
                 >
                   <option value="general">General</option>
@@ -121,7 +121,7 @@ export function FeedbackPanel() {
                 Sentiment
                 <select
                   name="sentiment"
-                  className="mt-1 w-full rounded-md border border-border/60 bg-black/30 px-3 py-2 text-sm text-foreground shadow-inner"
+                  className="surface-inset mt-1 w-full rounded-md border border-border/60 px-3 py-2 text-sm text-foreground shadow-inner"
                   defaultValue=""
                 >
                   <option value="">Neutral</option>
@@ -156,7 +156,7 @@ export function FeedbackPanel() {
                 Severity
                 <select
                   name="severity"
-                  className="mt-1 w-full rounded-md border border-border/60 bg-black/30 px-3 py-2 text-sm text-foreground shadow-inner"
+                  className="surface-inset mt-1 w-full rounded-md border border-border/60 px-3 py-2 text-sm text-foreground shadow-inner"
                   defaultValue="minor"
                 >
                   <option value="blocker">Blocker</option>
@@ -168,7 +168,7 @@ export function FeedbackPanel() {
                 Frequency
                 <select
                   name="frequency"
-                  className="mt-1 w-full rounded-md border border-border/60 bg-black/30 px-3 py-2 text-sm text-foreground shadow-inner"
+                  className="surface-inset mt-1 w-full rounded-md border border-border/60 px-3 py-2 text-sm text-foreground shadow-inner"
                   defaultValue="sometimes"
                 >
                   <option value="always">Always</option>

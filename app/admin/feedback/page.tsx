@@ -34,7 +34,7 @@ export default async function AdminFeedbackPage({
           <h1 className="text-xl font-semibold">Access restricted</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             This page is for admin accounts only. If you should have access, add your email to
-            <code className="mx-1 rounded bg-black/30 px-1 py-0.5 text-xs">ADMIN_EMAILS</code>,
+            <code className="mx-1 rounded surface-muted px-1 py-0.5 text-xs">ADMIN_EMAILS</code>,
             redeploy, then sign out and sign back in.
           </p>
         </Card>
@@ -66,10 +66,10 @@ export default async function AdminFeedbackPage({
         <Card className="rounded-2xl border border-border/70 bg-secondary/40 p-6 text-sm text-muted-foreground">
           <h1 className="text-lg font-semibold text-foreground">Events table out of sync</h1>
           <p className="mt-2">
-            We couldn&apos;t query <code className="rounded bg-black/30 px-1 py-0.5">events.status</code>.
-            Make sure the latest schema is applied (run <code className="rounded bg-black/30 px-1 py-0.5">npm run db:push</code> against your DB).
+            We couldn&apos;t query <code className="rounded surface-muted px-1 py-0.5">events.status</code>.
+            Make sure the latest schema is applied (run <code className="rounded surface-muted px-1 py-0.5">npm run db:push</code> against your DB).
           </p>
-          <pre className="mt-3 overflow-x-auto rounded-lg bg-black/30 p-3 text-xs text-foreground/90">
+          <pre className="surface-inset mt-3 overflow-x-auto rounded-lg p-3 text-xs text-foreground/90">
             {(error as Error)?.message ?? String(error)}
           </pre>
         </Card>
@@ -149,7 +149,7 @@ function Details({ row }: { row: (typeof events.$inferSelect) }) {
       {view.details && (
         <div className="space-y-2">
           <h3 className="text-sm font-semibold">Details</h3>
-          <pre className="overflow-x-auto rounded-lg bg-black/30 p-3 text-xs leading-relaxed text-foreground/90">
+          <pre className="surface-inset overflow-x-auto rounded-lg p-3 text-xs leading-relaxed text-foreground/90">
             {view.details}
           </pre>
         </div>
@@ -213,7 +213,7 @@ function StatusFilters({ active }: { active: string }) {
           className={`rounded-full border px-3 py-1 text-sm transition ${
             active === f.value
               ? "border-primary/60 bg-primary/10 text-primary"
-              : "border-border/60 bg-black/20 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+              : "surface-muted border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground"
           }`}
         >
           {f.label}

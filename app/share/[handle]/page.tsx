@@ -48,7 +48,7 @@ export default async function SharePage({ params }: { params: Promise<{ handle: 
               className="flex flex-col gap-3 rounded-xl border border-border/70 bg-secondary/40 p-3"
             >
               <div className="flex gap-3">
-                <div className="relative h-24 w-16 overflow-hidden rounded-lg border border-border/60 bg-black/30">
+                <div className="surface-strong relative h-24 w-16 overflow-hidden rounded-lg border border-border/60">
                   {item.posterUrl ? (
                     <Image
                       src={item.posterUrl}
@@ -78,7 +78,7 @@ export default async function SharePage({ params }: { params: Promise<{ handle: 
                       {item.status}
                     </Badge>
                     {item.rating !== null && item.rating !== undefined && (
-                      <span className="ml-auto flex items-center gap-1 rounded-full bg-white/5 px-2 py-1 text-[11px] font-medium">
+                      <span className="surface-muted ml-auto flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium">
                         <Star className="h-3 w-3 text-amber-400" />
                         {item.rating}/10
                       </span>

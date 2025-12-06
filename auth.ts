@@ -1,23 +1,11 @@
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/db";
 import { accounts, sessions, users, verificationTokens } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-const nextAuth = NextAuth as unknown as (config: any) => {
-  handlers: any;
-  auth: any;
-  signIn: any;
-  signOut: any;
-};
-
-export const {
-  handlers,
-  auth,
-  signIn,
-  signOut,
-} = nextAuth({
+const config: NextAuthConfig = {
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
@@ -34,7 +22,7 @@ export const {
     strategy: "database",
   },
   callbacks: {
-    async signIn({ user }: { user: any }) {
+    async signIn({ user }) {
       const adminEmails = (process.env.ADMIN_EMAILS ?? "")
         .split(",")
         .map((v) => v.trim().toLowerCase())
@@ -52,10 +40,17 @@ export const {
     async session({ session, user }: { session: any; user: any }) {
       if (session.user) {
         session.user.id = user.id;
-        session.user.admin = Boolean((user as any).admin);
+        session.user.admin = Boolean(user.admin);
       }
       return session;
     },
   },
   trustHost: true,
-});
+};
+
+export const {
+  handlers,
+  auth,
+  signIn,
+  signOut,
+} = NextAuth(config);

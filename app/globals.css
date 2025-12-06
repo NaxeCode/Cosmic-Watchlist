@@ -3,6 +3,35 @@
 @tailwind utilities;
 
 :root {
+  /* Light theme */
+  --background: #f7f7fb;
+  --foreground: #0c1224;
+  --card: rgba(255, 255, 255, 0.9);
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #0c1224;
+  --primary: #4f46e5;
+  --primary-foreground: #f5f3ff;
+  --secondary: #e5e7ff;
+  --secondary-foreground: #111827;
+  --muted: #e7e8f5;
+  --muted-foreground: #4b5563;
+  --accent: #c7d2fe;
+  --accent-foreground: #111827;
+  --destructive: #ef4444;
+  --destructive-foreground: #fef2f2;
+  --border: rgba(17, 24, 39, 0.08);
+  --input: rgba(17, 24, 39, 0.08);
+  --ring: rgba(79, 70, 229, 0.35);
+  --surface: rgba(255, 255, 255, 0.9);
+  --surface-strong: rgba(255, 255, 255, 0.95);
+  --surface-muted: rgba(12, 18, 36, 0.06);
+  --surface-inset: rgba(12, 18, 36, 0.1);
+  --radius: 1rem;
+}
+
+.dark {
+  /* Dark theme (original) */
   --background: #08080c;
   --foreground: #f4f4ff;
   --card: rgba(19, 20, 26, 0.85);
@@ -22,6 +51,10 @@
   --border: rgba(255, 255, 255, 0.08);
   --input: rgba(255, 255, 255, 0.1);
   --ring: rgba(124, 58, 237, 0.4);
+  --surface: rgba(8, 8, 15, 0.65);
+  --surface-strong: rgba(5, 6, 12, 0.78);
+  --surface-muted: rgba(255, 255, 255, 0.05);
+  --surface-inset: rgba(255, 255, 255, 0.08);
   --radius: 1rem;
 }
 
@@ -30,7 +63,7 @@
 }
 
 body {
-  background: #08080f;
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   min-height: 100vh;
@@ -142,6 +175,22 @@ input[type="number"].no-spinner {
 
 .cosmic-button:hover .orbit {
   opacity: 1;
+}
+
+.surface {
+  background: var(--surface);
+}
+
+.surface-strong {
+  background: var(--surface-strong);
+}
+
+.surface-muted {
+  background: var(--surface-muted);
+}
+
+.surface-inset {
+  background: var(--surface-inset);
 }
 
 .orbit span {
