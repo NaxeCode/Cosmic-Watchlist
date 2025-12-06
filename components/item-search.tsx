@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState, useTransition } from "
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { X, Tag as TagIcon, Plus } from "lucide-react";
+import { X, Tag as TagIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ITEM_TYPES } from "@/lib/constants";
 
@@ -113,10 +113,10 @@ export function ItemSearch({
   return (
     <form
       onSubmit={onSubmit}
-      className="flex flex-wrap items-start gap-3 rounded-2xl border border-border/60 bg-secondary/40 p-3"
+      className="grid grid-cols-1 items-start gap-4 rounded-2xl border border-border/60 bg-secondary/40 p-4 sm:grid-cols-2 lg:grid-cols-4"
       aria-busy={isPending}
     >
-      <div className="flex min-w-[220px] flex-1 flex-col gap-2">
+      <div className="min-w-0 space-y-2 lg:col-span-2">
         <label className="text-xs text-muted-foreground" htmlFor="q">
           Title
         </label>
@@ -170,7 +170,7 @@ export function ItemSearch({
           </div>
         )}
       </div>
-      <div className="flex min-w-[180px] flex-col gap-2">
+      <div className="min-w-0 space-y-2">
         <label className="text-xs text-muted-foreground">Type</label>
         <Select
           value={typeFilter || "all"}
@@ -209,7 +209,7 @@ export function ItemSearch({
           </SelectContent>
         </Select>
       </div>
-      <div className="flex min-w-[220px] flex-1 flex-col gap-2">
+      <div className="min-w-0 space-y-2 sm:col-span-2 lg:col-span-2">
         <label className="text-xs text-muted-foreground" htmlFor="tag">
           Tags
         </label>
@@ -267,9 +267,14 @@ export function ItemSearch({
           </div>
         </div>
       </div>
-      <div className="flex items-start">
-        <Button type="submit" size="sm" className="mt-[29px] gap-1" disabled={isPending}>
-          {isPending ? "Updating…" : "Search"}
+      <div className="flex items-start sm:col-span-2 lg:col-span-1">
+        <Button
+          type="submit"
+          size="sm"
+          className="w-full gap-1 sm:w-auto"
+          disabled={isPending}
+        >
+          {isPending ? "Updating..." : "Search"}
         </Button>
       </div>
     </form>

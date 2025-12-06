@@ -51,7 +51,7 @@ export const ItemCard = memo(function ItemCard({
         studios[0],
       ]
         .filter(Boolean)
-        .join(" \u0007 "),
+        .join(" | "),
     [item.releaseYear, item.runtimeMinutes, studios],
   );
 
@@ -79,35 +79,10 @@ export const ItemCard = memo(function ItemCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.02, duration: 0.14 }}
     >
-      <Card className="relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-border/70 bg-secondary/40 p-3 shadow-sm md:flex-row">
-        <div className="flex flex-col items-center gap-2">
-          <label className="surface-muted flex items-center gap-1.5 rounded-full px-2 py-1 shadow-inner">
-            <input
-              type="checkbox"
-              className="h-4 w-4 cursor-pointer rounded border border-border/70 bg-transparent accent-primary"
-              checked={selected}
-              onChange={() => onToggle(item.id)}
-              aria-label="Select item"
-            />
-          </label>
-          <Badge variant="outline" className="capitalize text-[10px]">
-            {item.status}
-          </Badge>
-          {item.rating !== null && item.rating !== undefined && (
-            <span className="surface-muted flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium">
-              <Star className="h-3 w-3 text-amber-400" />
-              {item.rating}/10
-            </span>
-          )}
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <CalendarClock className="h-3 w-3" />
-            {createdLabel}
-          </div>
-        </div>
-
-        <div className="surface-strong relative h-32 w-24 overflow-hidden rounded-xl border border-border/70 shadow-inner">
+      <Card className="relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-border/70 bg-secondary/40 p-3 shadow-sm sm:flex-row">
+        <div className="surface-strong relative h-40 w-full overflow-hidden rounded-xl border border-border/70 shadow-inner sm:h-32 sm:w-24">
           {item.posterUrl ? (
-            <Image src={item.posterUrl} alt={item.title} fill sizes="120px" className="object-cover" />
+            <Image src={item.posterUrl} alt={item.title} fill sizes="160px" className="object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-[11px] text-muted-foreground">
               No poster
@@ -116,7 +91,7 @@ export const ItemCard = memo(function ItemCard({
         </div>
 
         <div className="flex-1 space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-start gap-2">
             <Badge variant="glow" className="capitalize text-[10px] sm:text-xs">
               {item.type}
             </Badge>
@@ -126,18 +101,41 @@ export const ItemCard = memo(function ItemCard({
                 {item.releaseYear}
               </Badge>
             )}
-            <div className="ml-auto flex items-center gap-1">
+            <Badge variant="outline" className="capitalize text-[10px]">
+              {item.status}
+            </Badge>
+            <div className="ml-auto flex items-center gap-2">
+              {item.rating !== null && item.rating !== undefined && (
+                <span className="surface-muted inline-flex items-center gap-1 rounded-full border border-border/70 px-2 py-1 text-[11px] font-medium">
+                  <Star className="h-3 w-3 text-amber-400" />
+                  {item.rating}/10
+                </span>
+              )}
+              <label className="surface-muted flex items-center gap-1.5 rounded-full px-2 py-1 shadow-inner">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 cursor-pointer rounded border border-border/70 bg-transparent accent-primary"
+                  checked={selected}
+                  onChange={() => onToggle(item.id)}
+                  aria-label="Select item"
+                />
+              </label>
               <EditItemDialog item={item} />
               <DeleteButton id={item.id} />
             </div>
           </div>
 
-          {metaLine && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" />
-              <span>{metaLine}</span>
-            </div>
-          )}
+          <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+            <CalendarClock className="h-3 w-3" />
+            <span>{createdLabel}</span>
+            {metaLine && (
+              <>
+                <span className="text-muted-foreground/50">|</span>
+                <Clock className="h-3.5 w-3.5" />
+                <span>{metaLine}</span>
+              </>
+            )}
+          </div>
 
           {item.synopsis && (
             <p className="text-sm leading-relaxed text-muted-foreground line-clamp-3">

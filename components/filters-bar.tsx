@@ -42,13 +42,13 @@ export function FiltersBar({ type, status, q }: Props) {
 
   return (
     <div className="rounded-2xl border border-border/60 bg-secondary/40 p-4 shadow-lg">
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Filter className="h-4 w-4" />
           Filters
         </div>
         <Select value={type ?? "all"} onValueChange={(v) => updateParam("type", v)}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
@@ -64,7 +64,7 @@ export function FiltersBar({ type, status, q }: Props) {
           value={status ?? "all"}
           onValueChange={(v) => updateParam("status", v)}
         >
-          <SelectTrigger className="w-[170px]">
+          <SelectTrigger className="w-full sm:w-[170px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -76,18 +76,26 @@ export function FiltersBar({ type, status, q }: Props) {
             ))}
           </SelectContent>
         </Select>
-        <form action={onSearch} className="flex flex-1 min-w-[200px] items-center gap-2">
+        <form
+          action={onSearch}
+          className="flex w-full flex-col gap-2 sm:flex-row sm:flex-1 sm:items-center"
+        >
           <Input
             name="q"
             defaultValue={q}
             placeholder="Search title..."
             className="w-full"
           />
-          <Button type="submit" variant="secondary" disabled={isPending}>
+          <Button type="submit" variant="secondary" disabled={isPending} className="w-full sm:w-auto">
             Search
           </Button>
         </form>
-        <Button variant="ghost" onClick={onReset} disabled={isPending} className="ml-auto">
+        <Button
+          variant="ghost"
+          onClick={onReset}
+          disabled={isPending}
+          className="w-full sm:ml-auto sm:w-auto"
+        >
           <Sparkles className="mr-2 h-4 w-4" />
           Reset
         </Button>

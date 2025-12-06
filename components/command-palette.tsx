@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { Search } from "lucide-react";
 import { toast } from "sonner";
 import {
+  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -17,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { ITEM_TYPES, STATUSES } from "@/lib/constants";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { bulkUpdateStatusAction } from "@/app/actions";
-import { DialogTitle } from "@/components/ui/dialog";
 
 type MinimalItem = {
   id: number;
@@ -39,6 +39,7 @@ export function CommandPalette({
   onSelectedChange?: (ids: number[]) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [internalSelected, setInternalSelected] = useState<number[]>([]);
   const [status, setStatus] = useState<string | undefined>(undefined);
   const [typeFilter, setTypeFilter] = useState<string | undefined>(undefined);
@@ -55,6 +56,14 @@ export function CommandPalette({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const handler = (e: MediaQueryListEvent | MediaQueryList) => setIsMobile(e.matches);
+    handler(mq);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
   }, []);
 
   const applySelection = (next: number[]) => {
@@ -101,99 +110,124 @@ export function CommandPalette({
     });
   };
 
-  return (
+  const commandContent = (
     <>
-      {withTrigger && (
-        <CommandTriggerButton onClick={() => setOpen(true)} />
-      )}
-      <CommandDialog open={open} onOpenChange={setOpen}>
-        <div className="flex flex-col gap-3 px-5 pt-5">
-          <DialogTitle className="sr-only">Command Palette</DialogTitle>
-          <div className="text-sm text-muted-foreground">
-            Search your entire library, select items, and bulk update status.
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <CommandInput placeholder="Search items by title..." />
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Badge variant="outline">{selected.length} selected</Badge>
-              <Button variant="ghost" size="sm" onClick={selectAll} disabled={!items.length}>
-                Select all
-              </Button>
-              <Button variant="ghost" size="sm" onClick={clearAll} disabled={!selected.length}>
-                Clear
-              </Button>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Select value={status} onValueChange={(v) => setStatus(v)}>
-              <SelectTrigger className="h-10 w-[200px]">
-                <SelectValue placeholder="Bulk status" />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={typeFilter ?? "all"} onValueChange={(v) => setTypeFilter(v === "all" ? undefined : v)}>
-              <SelectTrigger className="h-10 w-[180px]">
-                <SelectValue placeholder="All types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
-                {ITEM_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              variant="default"
-              size="sm"
-              disabled={pending || !selected.length || !status}
-              onClick={onBulkUpdate}
-            >
-              {pending ? "Updating..." : "Apply to selected"}
+      <div className="flex flex-col gap-3 px-5 pt-5">
+        <p className="sr-only">Command Palette</p>
+        <div className="text-sm text-muted-foreground">
+          Search your entire library, select items, and bulk update status.
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+          <CommandInput placeholder="Search items by title..." className="w-full" />
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <Badge variant="outline" className="w-fit">
+              {selected.length} selected
+            </Badge>
+            <Button variant="ghost" size="sm" onClick={selectAll} disabled={!items.length} className="w-full sm:w-auto">
+              Select all
+            </Button>
+            <Button variant="ghost" size="sm" onClick={clearAll} disabled={!selected.length} className="w-full sm:w-auto">
+              Clear
             </Button>
           </div>
         </div>
-        <CommandList className="custom-scroll max-h-[520px] overflow-y-auto px-3 pb-3">
-          <CommandEmpty>No items found.</CommandEmpty>
-            <CommandGroup heading="Items" className="px-2">
-              {filteredItems.map((item) => (
-                <CommandItem
-                  key={item.id}
-                  value={`${item.title} ${item.tags ?? ""}`}
-                  onSelect={() => toggleSelect(item.id)}
-                className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-3 text-sm shadow-sm"
-              >
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 cursor-pointer accent-primary"
-                  checked={selected.includes(item.id)}
-                  readOnly
-                />
-                <span className="flex-1 truncate">{item.title}</span>
-                <Badge variant="outline" className="text-[10px] capitalize">
-                  {item.type}
+        <div className="grid gap-2 sm:grid-cols-3 sm:items-center">
+          <Select value={status} onValueChange={(v) => setStatus(v)}>
+            <SelectTrigger className="h-10 w-full">
+              <SelectValue placeholder="Bulk status" />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUSES.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={typeFilter ?? "all"} onValueChange={(v) => setTypeFilter(v === "all" ? undefined : v)}>
+            <SelectTrigger className="h-10 w-full">
+              <SelectValue placeholder="All types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All types</SelectItem>
+              {ITEM_TYPES.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="default"
+            size="sm"
+            disabled={pending || !selected.length || !status}
+            onClick={onBulkUpdate}
+            className="w-full sm:w-auto"
+          >
+            {pending ? "Updating..." : "Apply to selected"}
+          </Button>
+        </div>
+      </div>
+      <CommandList className="custom-scroll max-h-[70vh] overflow-y-auto px-3 pb-3">
+        <CommandEmpty>No items found.</CommandEmpty>
+        <CommandGroup heading="Items" className="px-2">
+          {filteredItems.map((item) => (
+            <CommandItem
+              key={item.id}
+              value={`${item.title} ${item.tags ?? ""}`}
+              onSelect={() => toggleSelect(item.id)}
+              className="flex items-center gap-3 rounded-lg border border-border/50 bg-secondary/30 px-3 py-3 text-sm shadow-sm"
+            >
+              <input
+                type="checkbox"
+                className="h-4 w-4 cursor-pointer accent-primary"
+                checked={selected.includes(item.id)}
+                readOnly
+              />
+              <span className="flex-1 truncate">{item.title}</span>
+              <Badge variant="outline" className="text-[10px] capitalize">
+                {item.type}
+              </Badge>
+              <Badge variant="outline" className="text-[10px] capitalize">
+                {item.status}
+              </Badge>
+              {item.tags && (
+                <Badge variant="outline" className="text-[10px]">
+                  {item.tags.toString()}
                 </Badge>
-                <Badge variant="outline" className="text-[10px] capitalize">
-                  {item.status}
-                </Badge>
-                {item.tags && (
-                  <Badge variant="outline" className="text-[10px]">
-                    {item.tags.toString()}
-                  </Badge>
-                )}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-          <CommandSeparator />
-        </CommandList>
-      </CommandDialog>
+              )}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+        <CommandSeparator />
+      </CommandList>
+    </>
+  );
+
+  return (
+    <>
+      {withTrigger && <CommandTriggerButton onClick={() => setOpen(true)} />}
+      {isMobile ? (
+        open && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm">
+            <div className="absolute inset-x-0 bottom-0 mx-auto max-w-2xl rounded-t-2xl border border-border/60 bg-background pb-3 shadow-xl">
+              <div className="flex items-center justify-between px-4 pt-3">
+                <p className="text-sm font-semibold">Command palette</p>
+                <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>
+                  Close
+                </Button>
+              </div>
+              <Command className="mt-2 border-t border-border/50">
+                {commandContent}
+              </Command>
+            </div>
+          </div>
+        )
+      ) : (
+        <CommandDialog open={open} onOpenChange={setOpen}>
+          {commandContent}
+        </CommandDialog>
+      )}
     </>
   );
 }

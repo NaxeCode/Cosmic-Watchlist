@@ -68,7 +68,7 @@ export function ItemsView({
       </div>
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <div>
-          Page {page} of {totalPages} · {total} item{total === 1 ? "" : "s"}
+          Page {page} of {totalPages} | {total} item{total === 1 ? "" : "s"}
         </div>
       </div>
     </div>

@@ -157,8 +157,8 @@ export function ItemForm() {
       action={formAction}
       className="w-full space-y-4 rounded-2xl border border-border/70 bg-card/70 p-6 shadow-card backdrop-blur-lg"
     >
-      <div className="flex items-center justify-between gap-4">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
           <p className="text-lg font-semibold">Add to watchlist</p>
           <p className="text-sm text-muted-foreground">
             Track anything: anime, movies, TV, YouTube, games.
@@ -167,12 +167,18 @@ export function ItemForm() {
             Posters, year, runtime, synopsis, and cast auto-fill when TMDB/OMDb keys are set.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="secondary" onClick={onAutofill} disabled={isAutofilling || isPending} className="gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onAutofill}
+            disabled={isAutofilling || isPending}
+            className="w-full gap-2 sm:w-auto"
+          >
             <Sparkles className="h-4 w-4" />
             {isAutofilling ? "Auto-filling..." : "Auto-fill"}
           </Button>
-          <Button type="submit" disabled={isPending} className="gap-2">
+          <Button type="submit" disabled={isPending} className="w-full gap-2 sm:w-auto">
             <PlusCircle className="h-4 w-4" />
             {isPending ? "Adding..." : "Add"}
           </Button>
