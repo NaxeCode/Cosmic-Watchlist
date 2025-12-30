@@ -17,6 +17,7 @@ import { SmartStats } from "@/components/smart-stats";
 import { buildRecommendationsFromItems } from "@/lib/recommendations";
 import { Recommendations } from "@/components/recommendations";
 import { FeedbackPanel } from "@/components/feedback-panel";
+import { LandingPage } from "@/components/landing-page";
 
 type SearchParam =
   | Promise<Record<string, string | string[] | undefined>>
@@ -45,32 +46,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   const pageSize = Math.min(100, Math.max(10, Number(pageSizeParam) || 10));
 
   if (!userId) {
-    return (
-      <main className="mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center gap-6 px-6 py-16">
-        <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-white via-indigo-50 to-slate-100 p-10 shadow-card text-center dark:from-[#0f1020] dark:via-[#0b0c18] dark:to-[#070710]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(124,58,237,0.28),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(14,165,233,0.22),transparent_30%),radial-gradient(circle_at_50%_80%,rgba(236,72,153,0.16),transparent_32%)] blur-[1px]" />
-          <div className="relative space-y-4">
-            <Badge variant="glow" className="text-xs uppercase tracking-[0.2em]">
-              Cosmic watchlist
-            </Badge>
-            <h1 className="text-4xl font-bold leading-tight md:text-5xl">
-              Sign in with Google to unlock your watchlist
-            </h1>
-            <p className="mx-auto max-w-2xl text-base text-muted-foreground">
-              Keep your anime, movies, TV, YouTube, and games in one place. Edits, filters, and ratings sync to your account instantly.
-            </p>
-            <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
-              <Badge variant="outline">Private to your account</Badge>
-              <Badge variant="outline">Google sign-in</Badge>
-              <Badge variant="outline">Server actions</Badge>
-            </div>
-            <div className="flex justify-center pt-2">
-              <AuthButtons isSignedIn={false} />
-            </div>
-          </div>
-        </div>
-      </main>
-    );
+    return <LandingPage />;
   }
 
   const conditions = [];

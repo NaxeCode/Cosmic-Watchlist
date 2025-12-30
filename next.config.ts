@@ -15,6 +15,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "m.media-amazon.com",
       },
+      {
+        protocol: "https",
+        hostname: "s4.anilist.co",
+      },
+      {
+        protocol: "https",
+        hostname: "images.igdb.com",
+      },
     ],
   },
 };

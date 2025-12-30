@@ -18,6 +18,9 @@ const config: NextAuthConfig = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
+  pages: {
+    signIn: "/",
+  },
   session: {
     strategy: "database",
   },
@@ -43,6 +46,12 @@ const config: NextAuthConfig = {
         session.user.admin = Boolean(user.admin);
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // Always redirect to home page after sign-in
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
     },
   },
   trustHost: true,
