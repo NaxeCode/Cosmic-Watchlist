@@ -10,11 +10,11 @@ type DemoItem = {
   synopsis: string;
   releaseYear: number | null;
   runtimeMinutes: number | null;
-  tags?: string | null;
-  genres?: string | null;
-  studios?: string | null;
-  cast?: string | null;
-  notes?: string | null;
+  tags: string | null;
+  genres: string | null;
+  studios: string | null;
+  cast: string | null;
+  notes: string | null;
   createdAt: Date;
   userId: string;
   imdbId?: string | null;
@@ -383,7 +383,7 @@ export const DEMO_ITEMS: DemoItem[] = [
     tags: "rpg,dnd",
     genres: "role-playing",
     studios: "Larian Studios",
-    cast: "",
+    cast: null,
     notes: "So many choices, so little time.",
     createdAt: new Date("2024-05-03"),
     userId: "demo",
@@ -406,7 +406,7 @@ export const DEMO_ITEMS: DemoItem[] = [
     tags: "open-world,adventure",
     genres: "adventure",
     studios: "Nintendo",
-    cast: "",
+    cast: null,
     notes: "Endlessly inventive.",
     createdAt: new Date("2024-04-21"),
     userId: "demo",
@@ -429,7 +429,7 @@ export const DEMO_ITEMS: DemoItem[] = [
     tags: "souls,open-world",
     genres: "action,rpg",
     studios: "FromSoftware",
-    cast: "",
+    cast: null,
     notes: "Still discovering hidden areas.",
     createdAt: new Date("2024-02-07"),
     userId: "demo",
@@ -452,7 +452,7 @@ export const DEMO_ITEMS: DemoItem[] = [
     tags: "superhero,open-world",
     genres: "action,adventure",
     studios: "Insomniac Games",
-    cast: "",
+    cast: null,
     notes: "Traversal feels so good.",
     createdAt: new Date("2024-06-05"),
     userId: "demo",
@@ -475,7 +475,7 @@ export const DEMO_ITEMS: DemoItem[] = [
     tags: "mythology,story-rich",
     genres: "action,adventure",
     studios: "Santa Monica Studio",
-    cast: "",
+    cast: null,
     notes: "Incredible character work.",
     createdAt: new Date("2024-03-30"),
     userId: "demo",
