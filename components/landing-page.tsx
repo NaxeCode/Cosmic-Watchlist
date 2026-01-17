@@ -152,7 +152,7 @@ export function LandingPage({ isSignedIn = false }: { isSignedIn?: boolean }) {
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   return (
-    <div ref={containerRef} className="relative min-h-screen overflow-hidden">
+    <div ref={containerRef} className="dark relative min-h-screen overflow-hidden bg-background text-foreground">
       {/* Animated cosmic background */}
       <div className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0118] via-[#0f0420] to-background" />
