@@ -28,16 +28,12 @@ const themeInitScript = `
 (() => {
   try {
     const stored = localStorage.getItem("watchlist-theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const theme = stored === "light" || stored === "dark"
       ? stored
-      : prefersDark
-        ? "dark"
-        : "light";
+      : "dark";
     document.documentElement.classList.toggle("dark", theme === "dark");
   } catch (error) {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    if (prefersDark) document.documentElement.classList.add("dark");
+    document.documentElement.classList.add("dark");
   }
 })();
 `;
