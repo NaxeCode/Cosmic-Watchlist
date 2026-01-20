@@ -40,6 +40,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 Import-Movies.csv
+Import-Movies2.csv
+
+# markdown (keep README)
+*.md
+*.MD
+!README.md
+!README.MD
 
 # Letterboxd
 .csv
