@@ -15,8 +15,8 @@ Screens from the live demo.
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/demo-your-collection.png" width="48%" alt="Dashboard / collection" />
-  <img src="docs/screenshots/demo-recommendations.png" width="48%" alt="Stats + recommendations" />
+  <img src="docs/screenshots/demo-your-collection.png" width="46%" alt="Dashboard / collection" />
+  <img src="docs/screenshots/demo-recommendations.png" width="52%" alt="Stats + recommendations" />
 </p>
 
 ![Command center palette](docs/screenshots/demo-command-center-palette.png)
