@@ -5,7 +5,7 @@ A premium, server-first watchlist for anime, movies, TV, and games: fast CRUD, s
 Design note: this app uses `@stargazers-stella/cosmic-ui` for shared design DNA (token-first theming, Radix-based primitives, and the cosmic/glass visual language).
 
 ## Demo
-- Live: add URL
+- Live: [Open live demo](https://stargazers-cosmic-watchlist.vercel.app/?utm_source=github&utm_medium=readme&utm_campaign=career-portfolio-2026&utm_content=demo)
 
 ## Screenshots
 Screens from the live demo.
