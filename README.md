@@ -30,7 +30,12 @@ Premium, server-first watchlist for anime, movies, TV, and games. Fast CRUD, sha
 ![Architecture diagram](docs/screenshots/architecture.png)
 
 ## Tradeoffs
-Serverless hosting keeps costs low and scales cleanly without always-on servers. It reduces ops overhead and is a good fit here, even though it is not ideal for every workload.\n\nTradeoff notes:\n- Cold starts can add latency for rarely-hit routes.\n- Long-running jobs and heavy background processing are a poor fit without external workers.\n- You trade fine-grained server tuning for simplicity and lower cost.
+Serverless hosting keeps costs low and scales cleanly without always-on servers. It reduces ops overhead and is a good fit here, even though it is not ideal for every workload.
+
+Tradeoff notes:
+- Cold starts can add latency for rarely-hit routes.
+- Long-running jobs and heavy background processing are a poor fit without external workers.
+- You trade fine-grained server tuning for simplicity and lower cost.
 
 ## Features
 - Server-first CRUD with type-safe validation (Zod) and Server Actions.
