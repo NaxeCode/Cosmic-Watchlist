@@ -11,7 +11,7 @@ export type MetadataResult = {
   studios?: string[];
   imdbId?: string | null;
   tmdbId?: number | null;
-  source: "tmdb" | "omdb" | "anilist" | "igdb";
+  source: "tmdb" | "omdb" | "anilist" | "igdb" | "openlibrary" | "googlebooks";
 };
 
 export type SimilarTitle = {
@@ -48,6 +48,14 @@ export async function fetchMetadata(title: string, type: string): Promise<Metada
   if (type === "game") {
     const igdb = await fetchFromIgdb(title);
     if (igdb) return igdb;
+    return null;
+  }
+
+  if (type === "book") {
+    const openLibrary = await fetchFromOpenLibrary(title);
+    if (openLibrary) return openLibrary;
+    const googleBooks = await fetchFromGoogleBooks(title);
+    if (googleBooks) return googleBooks;
     return null;
   }
 
@@ -337,6 +345,88 @@ async function safeJsonFetch(url: string): Promise<any | null> {
   }
 }
 
+async function fetchFromOpenLibrary(title: string): Promise<MetadataResult | null> {
+  const searchUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(title)}&limit=1`;
+  try {
+    const searchRes = await fetch(searchUrl, {
+      headers: { Accept: "application/json", "User-Agent": "CosmicWatchlist/1.0" },
+    });
+    if (!searchRes.ok) return null;
+    const search = await searchRes.json();
+    const doc = search?.docs?.[0];
+    if (!doc) return null;
+
+    let synopsis: string | null = null;
+    let subjects: string[] = [];
+    const workKey = typeof doc?.key === "string" ? doc.key : null;
+    if (workKey) {
+      const workUrl = `https://openlibrary.org${workKey}.json`;
+      const work = await fetchOpenLibraryJson(workUrl);
+      if (work) {
+        synopsis = extractOpenLibraryDescription(work?.description);
+        subjects = Array.isArray(work?.subjects) ? work.subjects.filter(Boolean) : [];
+      }
+    }
+
+    const authors = Array.isArray(doc?.author_name) ? doc.author_name.filter(Boolean) : [];
+    const publishers = Array.isArray(doc?.publisher) ? doc.publisher.filter(Boolean) : [];
+    const year = Number.isFinite(doc?.first_publish_year) ? Number(doc.first_publish_year) : null;
+    const posterUrl = openLibraryCoverUrl(doc);
+
+    return {
+      source: "openlibrary",
+      tmdbId: null,
+      imdbId: null,
+      posterUrl,
+      releaseYear: year,
+      runtimeMinutes: null,
+      synopsis: synopsis ? synopsis.slice(0, 2000) : null,
+      cast: authors.length ? authors : undefined,
+      genres: subjects.length ? subjects.slice(0, 8) : undefined,
+      studios: publishers.length ? publishers.slice(0, 4) : undefined,
+    };
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[metadata] openlibrary fetch failed", error);
+    }
+    return null;
+  }
+}
+
+async function fetchFromGoogleBooks(title: string): Promise<MetadataResult | null> {
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(title)}&maxResults=1`;
+  try {
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const item = data?.items?.[0];
+    if (!item) return null;
+    const info = item?.volumeInfo ?? {};
+    const posterUrl = normalizeGoogleCover(info?.imageLinks?.thumbnail || info?.imageLinks?.smallThumbnail);
+    const authors = Array.isArray(info?.authors) ? info.authors.filter(Boolean) : [];
+    const categories = Array.isArray(info?.categories) ? info.categories.filter(Boolean) : [];
+    const publisher = typeof info?.publisher === "string" ? [info.publisher] : [];
+
+    return {
+      source: "googlebooks",
+      tmdbId: null,
+      imdbId: null,
+      posterUrl: posterUrl ?? null,
+      releaseYear: parseYear(info?.publishedDate),
+      runtimeMinutes: null,
+      synopsis: typeof info?.description === "string" ? info.description.slice(0, 2000) : null,
+      cast: authors.length ? authors : undefined,
+      genres: categories.length ? categories.slice(0, 8) : undefined,
+      studios: publisher.length ? publisher : undefined,
+    };
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[metadata] google books fetch failed", error);
+    }
+    return null;
+  }
+}
+
 async function getIgdbToken(clientId: string, clientSecret: string): Promise<string | null> {
   try {
     const res = await fetch(
@@ -356,6 +446,45 @@ function normalizeIgdbCover(url?: string | null) {
   let normalized = url.replace("//", "https://");
   normalized = normalized.replace("t_thumb", "t_cover_big");
   return normalized;
+}
+
+async function fetchOpenLibraryJson(url: string): Promise<any | null> {
+  try {
+    const res = await fetch(url, {
+      headers: { Accept: "application/json", "User-Agent": "CosmicWatchlist/1.0" },
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+function openLibraryCoverUrl(row: any) {
+  if (Number.isFinite(row?.cover_i)) {
+    return `https://covers.openlibrary.org/b/id/${row.cover_i}-L.jpg`;
+  }
+  const isbn = Array.isArray(row?.isbn) ? row.isbn.find((v: any) => typeof v === "string") : null;
+  if (isbn) {
+    return `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
+  }
+  return null;
+}
+
+function normalizeGoogleCover(url?: string | null) {
+  if (!url) return null;
+  if (url.startsWith("http://")) return `https://${url.slice("http://".length)}`;
+  return url;
+}
+
+function extractOpenLibraryDescription(input: unknown) {
+  if (!input) return null;
+  if (typeof input === "string") return stripHtml(input);
+  if (typeof input === "object" && input && "value" in (input as any)) {
+    const value = (input as any).value;
+    if (typeof value === "string") return stripHtml(value);
+  }
+  return null;
 }
 
 function stripHtml(input: string) {

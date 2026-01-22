@@ -27,6 +27,18 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.igdb.com",
       },
+      {
+        protocol: "https",
+        hostname: "covers.openlibrary.org",
+      },
+      {
+        protocol: "https",
+        hostname: "books.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "books.google.com",
+      },
     ],
   },
 

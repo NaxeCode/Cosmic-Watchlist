@@ -47,7 +47,7 @@ function shouldRequireMetadata(type: string) {
 }
 
 function shouldEnrichType(type: string) {
-  return type === "movie" || type === "tv" || type === "anime" || type === "game";
+  return type === "movie" || type === "tv" || type === "anime" || type === "game" || type === "book";
 }
 
 async function enrichItemRecord(id: number, title: string, type: string) {

@@ -5,7 +5,7 @@ const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w185";
 
 type SearchResult = {
   title: string;
-  type: "movie" | "tv" | "anime" | "game";
+  type: "movie" | "tv" | "anime" | "game" | "book";
   year?: number;
   posterUrl?: string | null;
 };
@@ -23,6 +23,8 @@ export async function GET(request: Request) {
 
   if (rawType === "anime") {
     results = await searchAnime(q);
+  } else if (rawType === "book") {
+    results = await searchBooks(q);
   } else if (rawType === "game") {
     results = await searchIgdb(q);
   } else {
@@ -149,6 +151,57 @@ async function searchIgdb(q: string): Promise<SearchResult[]> {
   }
 }
 
+async function searchBooks(q: string): Promise<SearchResult[]> {
+  const openLibrary = await searchOpenLibrary(q);
+  if (openLibrary.length) return openLibrary;
+  return searchGoogleBooks(q);
+}
+
+async function searchOpenLibrary(q: string): Promise<SearchResult[]> {
+  const url = `https://openlibrary.org/search.json?title=${encodeURIComponent(q)}&limit=8`;
+  try {
+    const res = await fetch(url, { headers: { Accept: "application/json", "User-Agent": "CosmicWatchlist/1.0" } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const docs = Array.isArray(data?.docs) ? data.docs : [];
+    return docs
+      .map((row: any) => ({
+        title: row?.title,
+        type: "book" as const,
+        year: Number.isFinite(row?.first_publish_year) ? Number(row.first_publish_year) : undefined,
+        posterUrl: openLibraryCoverUrl(row),
+      }))
+      .filter((r: SearchResult) => r.title)
+      .slice(0, 8);
+  } catch {
+    return [];
+  }
+}
+
+async function searchGoogleBooks(q: string): Promise<SearchResult[]> {
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=8`;
+  try {
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const items = Array.isArray(data?.items) ? data.items : [];
+    return items
+      .map((row: any) => {
+        const info = row?.volumeInfo ?? {};
+        return {
+          title: info?.title,
+          type: "book" as const,
+          year: parseYear(info?.publishedDate),
+          posterUrl: normalizeGoogleCover(info?.imageLinks?.thumbnail || info?.imageLinks?.smallThumbnail),
+        };
+      })
+      .filter((r: SearchResult) => r.title)
+      .slice(0, 8);
+  } catch {
+    return [];
+  }
+}
+
 async function getIgdbToken(clientId: string, clientSecret: string): Promise<string | null> {
   try {
     const res = await fetch(
@@ -168,6 +221,23 @@ function normalizeIgdbCover(url?: string | null) {
   let normalized = url.replace("//", "https://");
   normalized = normalized.replace("t_thumb", "t_cover_big");
   return normalized;
+}
+
+function openLibraryCoverUrl(row: any) {
+  if (Number.isFinite(row?.cover_i)) {
+    return `https://covers.openlibrary.org/b/id/${row.cover_i}-L.jpg`;
+  }
+  const isbn = Array.isArray(row?.isbn) ? row.isbn.find((v: any) => typeof v === "string") : null;
+  if (isbn) {
+    return `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`;
+  }
+  return undefined;
+}
+
+function normalizeGoogleCover(url?: string | null) {
+  if (!url) return undefined;
+  if (url.startsWith("http://")) return `https://${url.slice("http://".length)}`;
+  return url;
 }
 
 async function safeJsonFetch(url: string) {
