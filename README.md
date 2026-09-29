@@ -1,77 +1,73 @@
 # Cosmic Watchlist
 
-Premium, server-first watchlist for anime, movies, TV, and games. Fast CRUD, shareable filters, and smart stats.
+A server-first watchlist for anime, film, TV, games and books, with Google sign-in, metadata enrichment from public catalogs, shareable filters and stats.
 
-[![demo](https://img.shields.io/badge/demo-live-0ea5e9?logo=vercel&logoColor=white&style=flat)](https://stargazers-cosmic-watchlist.vercel.app/?utm_source=github-readme&utm_medium=link&utm_campaign=career-portfolio-2026&utm_content=badge)
-![nextjs](https://img.shields.io/badge/next.js-16-000000?logo=nextdotjs&logoColor=white&style=flat)
-![react](https://img.shields.io/badge/react-19-149eca?logo=react&logoColor=white&style=flat)
-![tailwind](https://img.shields.io/badge/tailwindcss-3.4-38bdf8?logo=tailwindcss&logoColor=white&style=flat)
-![postgres](https://img.shields.io/badge/postgres-16-316192?logo=postgresql&logoColor=white&style=flat)
-![drizzle](https://img.shields.io/badge/drizzle-orm-6366f1?style=flat)
-
-- Live: [Open live site](https://stargazers-cosmic-watchlist.vercel.app/?utm_source=github-readme&utm_medium=link&utm_campaign=career-portfolio-2026&utm_content=demo) ✨
-
-## Screenshots
+[![status](https://img.shields.io/badge/status-active-a7c080?style=flat&labelColor=2d353b)](#status)
+![Next.js](https://img.shields.io/badge/Next.js-16-7fbbb3?style=flat&labelColor=2d353b&logo=nextdotjs&logoColor=d3c6aa)
+![React](https://img.shields.io/badge/React-19-7fbbb3?style=flat&labelColor=2d353b&logo=react&logoColor=d3c6aa)
+![Postgres](https://img.shields.io/badge/PostgreSQL-7fbbb3?style=flat&labelColor=2d353b&logo=postgresql&logoColor=d3c6aa)
+![Drizzle](https://img.shields.io/badge/Drizzle-ORM-7fbbb3?style=flat&labelColor=2d353b&logo=drizzle&logoColor=d3c6aa)
+[![demo](https://img.shields.io/badge/demo-live-a7c080?style=flat&labelColor=2d353b)](https://stargazers-cosmic-watchlist.vercel.app)
 
 <p align="center">
-  <img src="docs/screenshots/landing-header.png" width="80%" alt="Landing hero" />
+  <img src="docs/screenshots/demo-your-collection.png" width="49%" alt="Collection view" />
+  <img src="docs/screenshots/demo-command-center-palette.png" width="49%" alt="Command palette" />
 </p>
 
-<p align="center">
-  <img src="docs/screenshots/demo-your-collection.png" width="46%" alt="Dashboard / collection" />
-  <img src="docs/screenshots/demo-recommendations.png" width="52%" alt="Stats + recommendations" />
-</p>
+## What it does
 
-![Command center palette](docs/screenshots/demo-command-center-palette.png)
+- Create, edit, delete and bulk-update items through Server Actions, validated with Zod and scoped to the signed-in user.
+- Filter by type, status and search text; filters live in URL params, so any view can be shared or bookmarked.
+- Enrich items with posters, synopsis, cast, genres and runtime from TMDB, OMDb, AniList, IGDB, Open Library and Google Books, depending on type and which keys are configured.
+- Stats: completion rate, runtime by type, activity heatmap, top genres, studios and tags.
+- Recommendations seeded from completed or highly rated items (TMDB similar titles).
+- Import a Letterboxd CSV export.
+- Optional AI tagging of items with OpenAI.
+- Public read-only share page at `/share/<handle>`, opt-in and revocable, with handle regeneration.
+- A `/demo` route with seeded data that works without signing in.
+- In-app feedback and bug reports, triaged from an admin page gated by `ADMIN_EMAILS`.
 
-## Architecture
+## How it works
 
-![Architecture diagram](docs/screenshots/architecture.png)
+```mermaid
+flowchart LR
+    B[Browser] --> N[Next.js App Router<br/>Server Components + Server Actions]
+    N -->|Auth.js, database sessions| G[Google OAuth]
+    N -->|Drizzle ORM| DB[(Postgres)]
+    N -->|/api/search, /api/metadata| M[TMDB, OMDb, AniList,<br/>IGDB, Open Library, Google Books]
+    N -->|optional| O[OpenAI]
+```
 
-## Tradeoffs
-Serverless hosting keeps costs low and scales cleanly without always-on servers. It reduces ops overhead and is a good fit here, even though it is not ideal for every workload.
+Pages render on the server and mutations are Server Actions that call `revalidatePath` afterwards, so there is no client-side state store. Notable details:
 
-Tradeoff notes:
-- Cold starts can add latency for rarely-hit routes.
-- Long-running jobs and heavy background processing are a poor fit without external workers.
-- You trade fine-grained server tuning for simplicity and lower cost.
+- **Auth.** Auth.js (NextAuth v5) with the Drizzle adapter and `database` session strategy; admin rights are granted at sign-in from an email allowlist.
+- **Ownership checks.** Every update and delete query filters on both item id and `userId`.
+- **Write quotas.** Before inserts, `lib/limits.ts` checks per-user total and daily counts and global total and daily counts (defaults 2,000 / 250 / 200,000 / 5,000, overridable by env), which bounds abuse and database growth on a free tier.
+- **Schema.** `db/schema.ts` defines Postgres enums for item type and status plus `users`, `accounts`, `sessions`, `verification_tokens`, `items` and `events`. SQL migrations are in `drizzle/`.
+- **Tests.** Vitest covers validation, metadata fetching, recommendations, Letterboxd parsing, analytics and admin feedback.
 
-## Features
-- Server-first CRUD with type-safe validation (Zod) and Server Actions.
-- Shareable filters via URL params.
-- Smart stats: completion rate, runtime totals, activity heatmap, and breakdowns.
-- Optional enrichment + recommendations (TMDB/OMDb).
-- Google sign-in via Auth.js/NextAuth v5 beta with Postgres sessions.
+## Getting started
 
-## Stack
-Next.js 16 App Router · React 19 · TypeScript · Tailwind CSS · Drizzle ORM · PostgreSQL · Auth.js
-
-## Quickstart
+Requires Node.js and a Postgres database.
 
 ```bash
-cd Stargazers-Cosmic-Watchlist
+git clone https://github.com/NaxeCode/Cosmic-Watchlist.git
+cd Cosmic-Watchlist
 npm install
 cp .env.example .env.local
 npm run db:push
 npm run db:seed
-npm run dev
+npm run dev          # http://localhost:3000
 ```
 
-Open `http://localhost:3000`.
+Required env: `DATABASE_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `NEXTAUTH_SECRET`.
+Optional: `TMDB_API_KEY`, `OMDB_API_KEY`, `IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET`, `OPENAI_API_KEY`, `ADMIN_EMAILS`, `NEXT_PUBLIC_GA_MEASUREMENT_ID`.
 
-## Config
+Other scripts: `npm test`, `npm run lint`, `npm run build`, `npm run db:studio`.
 
-Required:
-- `DATABASE_URL`
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-- `NEXTAUTH_SECRET`
+## Status
 
-Optional:
-- `NEXT_PUBLIC_GA_MEASUREMENT_ID`
-- `TMDB_API_KEY`
-- `OMDB_API_KEY`
-- `OPENAI_API_KEY`
-- `IGDB_CLIENT_ID`
-- `IGDB_CLIENT_SECRET`
-- `ADMIN_EMAILS`
+Deployed on Vercel. The live demo at `/demo` shows the dashboard with seeded data. Hosting is serverless, which keeps cost near zero; the trade-off is cold starts on rarely hit routes and no place for long-running background work.
+
+---
+<sub>Built by [Aladdin Ali](https://github.com/NaxeCode) · [naxecode.github.io](https://naxecode.github.io)</sub>
