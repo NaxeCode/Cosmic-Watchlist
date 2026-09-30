@@ -1,3 +1,5 @@
+<img src=".github/brand/logo.svg" width="80" alt="" />
+
 # Cosmic Watchlist
 
 A server-first watchlist for anime, film, TV, games and books, with Google sign-in, metadata enrichment from public catalogs, shareable filters and stats.
@@ -68,6 +70,10 @@ Other scripts: `npm test`, `npm run lint`, `npm run build`, `npm run db:studio`.
 ## Status
 
 Deployed on Vercel. The live demo at `/demo` shows the dashboard with seeded data. Hosting is serverless, which keeps cost near zero; the trade-off is cold starts on rarely hit routes and no place for long-running background work.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
 
 ---
 <sub>Built by [Aladdin Ali](https://github.com/NaxeCode) · [naxecode.github.io](https://naxecode.github.io)</sub>
