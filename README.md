@@ -71,6 +71,14 @@ Other scripts: `npm test`, `npm run lint`, `npm run build`, `npm run db:studio`.
 
 Deployed on Vercel. The live demo at `/demo` shows the dashboard with seeded data. Hosting is serverless, which keeps cost near zero; the trade-off is cold starts on rarely hit routes and no place for long-running background work.
 
+## How this project is run
+
+[![tracked in Linear](.github/brand/badges/run-linear.svg)](https://linear.app) [![AI-reviewed · Codex](.github/brand/badges/run-codex.svg)](#how-this-project-is-run) [![PR-only main](.github/brand/badges/run-main.svg)](#how-this-project-is-run)
+
+- **Planning:** tracked in Linear as initiatives → projects → milestones → issues; branch names and PR titles carry the issue ID.
+- **Review:** every pull request gets a Codex review before merge.
+- **Guardrails:** the default branch changes only through pull requests (GitHub ruleset).
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
