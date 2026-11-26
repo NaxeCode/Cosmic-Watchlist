@@ -87,7 +87,7 @@ export function FiltersBar({ type, status, q, basePath = "/" }: Props) {
             placeholder="Search title..."
             className="w-full"
           />
-          <Button type="submit" variant="secondary" disabled={isPending} className="w-full sm:w-auto">
+          <Button type="submit" data-demo-action={basePath === "/demo" ? "apply_filter" : undefined} variant="secondary" disabled={isPending} className="w-full sm:w-auto">
             Search
           </Button>
         </form>

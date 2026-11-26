@@ -9,7 +9,7 @@ A server-first watchlist for anime, film, TV, games and books, with Google sign-
 ![React](https://img.shields.io/badge/React-19-7fbbb3?style=flat&labelColor=2d353b&logo=react&logoColor=d3c6aa)
 ![Postgres](https://img.shields.io/badge/PostgreSQL-7fbbb3?style=flat&labelColor=2d353b&logo=postgresql&logoColor=d3c6aa)
 ![Drizzle](https://img.shields.io/badge/Drizzle-ORM-7fbbb3?style=flat&labelColor=2d353b&logo=drizzle&logoColor=d3c6aa)
-[![demo](https://img.shields.io/badge/demo-live-a7c080?style=flat&labelColor=2d353b)](https://stargazers-cosmic-watchlist.vercel.app)
+[![demo](https://img.shields.io/badge/demo-live-a7c080?style=flat&labelColor=2d353b)](https://watchlist.naxe.dev/demo?utm_source=github&utm_medium=readme&utm_campaign=portfolio&utm_content=stargazers-cosmic-watchlist)
 
 <p align="center">
   <img src="docs/screenshots/demo-your-collection.png" width="49%" alt="Collection view" />
@@ -84,4 +84,4 @@ Deployed on Vercel. The live demo at `/demo` shows the dashboard with seeded dat
 MIT. See [LICENSE](LICENSE).
 
 ---
-<sub>Built by [Aladdin Ali](https://github.com/NaxeCode) · [naxecode.github.io](https://naxecode.github.io)</sub>
+<sub>Built by [Aladdin Ali](https://github.com/NaxeCode) · [naxecode.github.io](https://naxe.dev/?utm_source=github&utm_medium=readme&utm_campaign=portfolio&utm_content=stargazers-cosmic-watchlist)</sub>

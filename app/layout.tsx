@@ -4,7 +4,6 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Script from "next/script";
-import { GoogleAnalytics } from "@/components/google-analytics";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -65,7 +64,6 @@ export default function RootLayout({
         />
         {children}
         <Toaster richColors position="top-right" />
-        <GoogleAnalytics />
       </body>
     </html>
   );

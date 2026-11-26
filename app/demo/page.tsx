@@ -1,3 +1,4 @@
+import { DemoAnalytics } from "@/components/demo-analytics";
 import { auth } from "@/auth";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { ITEM_TYPES, STATUSES } from "@/lib/constants";
@@ -106,32 +107,35 @@ export default async function Demo({ searchParams }: { searchParams: SearchParam
   ];
 
   return (
-    <DashboardShell
-      userImage={session?.user?.image ?? null}
-      userName={session?.user?.name ?? null}
-      stats={headerStats}
-      isAdmin={false}
-      isSignedIn={Boolean(session?.user?.id)}
-      aiAvailable={false}
-      results={results}
-      allItems={DEMO_ITEMS}
-      allItemsForCommand={DEMO_ITEMS}
-      page={safePage}
-      totalPages={totalPages}
-      total={total}
-      params={params}
-      pageSize={pageSize}
-      typeParam={typeParam}
-      statusParam={statusParam}
-      qParam={queryValue}
-      tagValue={tagValue}
-      uniqueTags={uniqueTags}
-      uniqueTitles={uniqueTitles}
-      collapsedSections={[]}
-      recommendations={recommendations}
-      isDemo
-      basePath="/demo"
-    />
+    <>
+      <DashboardShell
+        userImage={session?.user?.image ?? null}
+        userName={session?.user?.name ?? null}
+        stats={headerStats}
+        isAdmin={false}
+        isSignedIn={Boolean(session?.user?.id)}
+        aiAvailable={false}
+        results={results}
+        allItems={DEMO_ITEMS}
+        allItemsForCommand={DEMO_ITEMS}
+        page={safePage}
+        totalPages={totalPages}
+        total={total}
+        params={params}
+        pageSize={pageSize}
+        typeParam={typeParam}
+        statusParam={statusParam}
+        qParam={queryValue}
+        tagValue={tagValue}
+        uniqueTags={uniqueTags}
+        uniqueTitles={uniqueTitles}
+        collapsedSections={[]}
+        recommendations={recommendations}
+        isDemo
+        basePath="/demo"
+      />
+      {!session?.user && <DemoAnalytics />}
+    </>
   );
 }
 
